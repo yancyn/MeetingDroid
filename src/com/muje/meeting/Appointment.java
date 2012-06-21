@@ -115,5 +115,16 @@ public class Appointment {
 	public Appointment() {
 
 	}
+	/**
+	 * TODO: override ToString.
+	 */
+	@Override
+	public String toString() {
+		String format = "";
+        if (this.isRecurrance) format += "(R)";
+        if (this.sensitivity == Sensitivity.Private) format += "(P)";
+        format += "%1$s:%2$s(%3$td tmmm $ty $tH:$tM-%4$tH:$tM)";
+        return String.format(format, this.location, this.subject, this.start, this.end);
+	}
 
 }

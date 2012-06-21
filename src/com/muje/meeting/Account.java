@@ -61,6 +61,13 @@ public class Account {
 	}
 
 	public Account() {
+		
+		this.email = "";
+		this.displayName = "";
+		this.extension = "";
+		this.firstName = "";
+		this.lastName = "";
+		this.remarks = "";
 	}
 
 }
