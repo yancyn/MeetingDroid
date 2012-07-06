@@ -11,11 +11,14 @@ public class Room extends Account {
 		this.setEmail(email);
 	}
 
+	/**
+	 * Display email if have otherwise show the room name only.
+	 */
 	@Override
 	public String toString() {
 		String output = getDisplayName();
 		if (getEmail().length() > 0)
-			output += ": " + getEmail();
+			output = getEmail();
 		return output;
 	}
 

@@ -1,5 +1,7 @@
 package com.muje.meeting;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
@@ -113,18 +115,33 @@ public class Appointment {
 	}
 
 	public Appointment() {
-
+		this.id = new UUID(0,0);
+		this.subject = "";
+		//this.start = new Date();
+		//this.end = new Date();
+		this.organizer = new Employee();
+		this.attendees = new ArrayList<Employee>();
+		this.optional = new ArrayList<Employee>();
+		this.isRecurrance = false;
+		this.location = new Room();
+		this.sensitivity = Sensitivity.None;
+		this.notes = "";
 	}
 	/**
-	 * TODO: override ToString.
+	 * Override ToString.
+	 * @see http://developer.android.com/reference/java/text/SimpleDateFormat.html
 	 */
 	@Override
 	public String toString() {
+		
+        String dateString = new SimpleDateFormat("d MMM yyyy HH:mm").format(this.start);
+        dateString += "-"+new SimpleDateFormat("HH:mm a").format(this.end);
+        
 		String format = "";
         if (this.isRecurrance) format += "(R)";
         if (this.sensitivity == Sensitivity.Private) format += "(P)";
-        format += "%1$s:%2$s(%3$td tmmm $ty $tH:$tM-%4$tH:$tM)";
-        return String.format(format, this.location, this.subject, this.start, this.end);
+        format += "%1$s:%2$s(%3$s)";        
+        return String.format(format, this.location, this.subject, dateString);
 	}
 
 }

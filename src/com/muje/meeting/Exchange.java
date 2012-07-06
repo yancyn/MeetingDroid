@@ -10,8 +10,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -36,6 +39,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import android.text.format.Formatter;
 import android.util.Log;
 
 public class Exchange {
@@ -74,6 +78,7 @@ public class Exchange {
 	}
 
 	public Exchange(String server, String alias) {
+
 		this.isAuthenticated = false;
 		this.domain = "";
 		this.user = "";
@@ -81,18 +86,6 @@ public class Exchange {
 		this.alias = alias;
 		this.server = server;
 		this.cookies = new ArrayList<String>();
-	}
-
-	/**
-	 * TODO: Return a collection of employee match with display name.
-	 * 
-	 * @param name
-	 * @return
-	 */
-	public List<Employee> findGAL(String name) {
-		ArrayList<Employee> employees = new ArrayList<Employee>();
-
-		return employees;
 	}
 
 	/**
@@ -135,8 +128,7 @@ public class Exchange {
 		try {
 			SSLContext sc = SSLContext.getInstance("TLS");
 			sc.init(null, trustAllCerts, new java.security.SecureRandom());
-			HttpsURLConnection
-					.setDefaultSSLSocketFactory(sc.getSocketFactory());
+			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -148,9 +140,8 @@ public class Exchange {
 	 * @param domain
 	 * @param user
 	 * @param password
-	 * @see http 
-	 *      ://stackoverflow.com/questions/2793150/how-to-use-java-net-urlconnection
-	 *      -to-fire-and-handle-http-requests
+	 * @see http://stackoverflow.com/questions/2793150/how-to-use-java-net-urlconnection-to-fire-and-handle-http-requests
+	 * @see http://developer.android.com/reference/java/net/HttpURLConnection.html
 	 * @return
 	 */
 	public Boolean authenticate(String domain, String user, String password) {
@@ -159,8 +150,7 @@ public class Exchange {
 		this.user = user;
 		this.password = password;
 
-		byte[] body = EncodingUtils
-				.getAsciiBytes("destination=Z2F&flags=0&username=" + domain
+		byte[] body = EncodingUtils.getAsciiBytes("destination=Z2F&flags=0&username=" + domain
 						+ "%5C" + user + "&password=" + password
 						+ "&SubmitCreds=Log+On&trusted=0");
 
@@ -176,18 +166,15 @@ public class Exchange {
 			// accept all ssl certificate by default
 			if (address.getProtocol().toLowerCase().equals("https")) {
 				trustAllHosts();
-				HttpsURLConnection https = (HttpsURLConnection) address
-						.openConnection();
+				HttpsURLConnection https = (HttpsURLConnection) address.openConnection();
 				https.setHostnameVerifier(DO_NOT_VERIFY);
 				connection = https;
 			}
 
 			connection.setDoOutput(true);
 			connection.setRequestMethod("POST");
-			connection.setRequestProperty("Content-Type",
-					"application/x-www-form-urlencoded");
-			connection.setRequestProperty("Content-Length",
-					String.valueOf(body.length));
+			connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+			connection.setRequestProperty("Content-Length", String.valueOf(body.length));
 
 			OutputStream output = connection.getOutputStream();
 			output.write(body);
@@ -212,6 +199,18 @@ public class Exchange {
 	}
 
 	/**
+	 * TODO: Return a collection of employee match with display name.
+	 * 
+	 * @param name
+	 * @return
+	 */
+	public List<Employee> findGAL(String name) {
+		ArrayList<Employee> employees = new ArrayList<Employee>();
+
+		return employees;
+	}
+
+	/**
 	 * Return one day appointment collection.
 	 * 
 	 * @param start
@@ -220,15 +219,22 @@ public class Exchange {
 	 */
 	public List<Appointment> getAppointments(Date oneDay, Room room) {
 
-		Date start = new Date(oneDay.getYear(), oneDay.getMonth(),
-				oneDay.getDate());
+		Date start = new Date(oneDay.getYear(), oneDay.getMonth(), oneDay.getDate());
 		// minus timezone to get GMT+0 value
-		start = new Date(start.getYear(), start.getMonth(), start.getDate(),
-				start.getHours(), start.getMinutes()
-						+ start.getTimezoneOffset(), start.getSeconds());
-		Date end = new Date(start.getYear(), start.getMonth(),
-				start.getDate() + 1);
-		return this.getAppointments(start, end, room);
+		Date gmt = new Date(start.getYear(),
+				start.getMonth(),
+				start.getDate(),
+				start.getHours(),
+				start.getMinutes() + start.getTimezoneOffset(),
+				start.getSeconds());
+		Date end = new Date(gmt.getYear(),
+				gmt.getMonth(),
+				gmt.getDate() + 1,
+				gmt.getHours(),
+				gmt.getMinutes(),
+				gmt.getSeconds());
+		
+		return this.getAppointments(gmt, end, room);
 	}
 
 	/**
@@ -240,56 +246,51 @@ public class Exchange {
 	 */
 	public List<Appointment> getAppointments(Date start, Date end, Room room) {
 
-		List<Appointment> appointments = new ArrayList<Appointment>();
-		String url = this.server + "/exchange/" + getAlias(room.getEmail())
-				+ "/calendar";// key: is alias not this.alias
-		appointments = getAppointmentsByAlias(start, end, url);
-		return appointments;
+		String url = this.server + "/exchange/" + getAlias(room.getEmail()) + "/calendar";// key: is alias not this.alias
+		return getAppointmentsByAlias(start, end, url);
 	}
 
-	private List<Appointment> getAppointmentsByAlias(Date start, Date end,
-			String url) {
+	private List<Appointment> getAppointmentsByAlias(Date start, Date end, String url) {
+		
+		DateFormat formatter = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 		List<Appointment> appointments = new ArrayList<Appointment>();
-
-		String startText = String.format("%1$tY/%1$tm/%1$td %1$tH:%1$tM:%1$tS",
-				start);
-		String endText = String.format("%1$tY/%1$tm/%1$td %1$tH:%1$tM:%1$tS",
-				end);
+		String startText = formatter.format(start);
+		String endText = formatter.format(end);
 
 		// Webdav SQL query to send to exchange
 		// Select the required fields under the specified condition
-		String xml = "<?xml version=\"\"1.0\"\"?>";
-		xml += "<g:searchrequest xmlns:g=\"\"DAV:\"\">";
+		String xml = "<?xml version=\"1.0\"?>";
+		xml += "<g:searchrequest xmlns:g=\"DAV:\">";
 		xml += "<g:sql>";
 		xml += "SELECT";
-		xml += " \"\"urn:schemas:calendar:location\"\",";
-		xml += " \"\"urn:schemas:httpmail:subject\"\",";
-		xml += " \"\"urn:schemas:calendar:dtstart\"\",";
-		xml += " \"\"urn:schemas:calendar:alldayevent\"\",";
-		xml += " \"\"urn:schemas:httpmail:textdescription\"\",";
-		xml += " \"\"urn:schemas:calendar:dtend\"\",";
-		xml += " \"\"urn:schemas:calendar:busystatus\"\",";
-		xml += " \"\"urn:schemas:calendar:meetingstatus\"\",";
-		xml += " \"\"urn:schemas:calendar:recurrenceid\"\",";
-		xml += " \"\"http://schemas.microsoft.com/exchange/sensitivity\"\",";
-		xml += " \"\"urn:schemas:calendar:organizer\"\",";
-		xml += " \"\"urn:schemas:mailheader:to\"\",";
-		xml += " \"\"urn:schemas:mailheader:cc\"\"";
+		xml += " \"urn:schemas:calendar:location\",";
+		xml += " \"urn:schemas:httpmail:subject\",";
+		xml += " \"urn:schemas:calendar:dtstart\",";
+		xml += " \"urn:schemas:calendar:alldayevent\",";
+		xml += " \"urn:schemas:httpmail:textdescription\",";
+		xml += " \"urn:schemas:calendar:dtend\",";
+		xml += " \"urn:schemas:calendar:busystatus\",";
+		xml += " \"urn:schemas:calendar:meetingstatus\",";
+		xml += " \"urn:schemas:calendar:recurrenceid\",";
+		xml += " \"http://schemas.microsoft.com/exchange/sensitivity\",";
+		xml += " \"urn:schemas:calendar:organizer\",";
+		xml += " \"urn:schemas:mailheader:to\",";
+		xml += " \"urn:schemas:mailheader:cc\"";
 		xml += " FROM";
-		xml += " Scope('SHALLOW TRAVERSAL OF \"\"%1$s\"\"')";
+		xml += " Scope('SHALLOW TRAVERSAL OF \"%1$s\"')";
 		xml += " WHERE";
-		xml += " \"\"DAV:contentclass\"\" = 'urn:content-classes:appointment'";
-		xml += " AND \"\"urn:schemas:calendar:dtstart\"\" &gt;= '%2$s'";
-		xml += " AND \"\"urn:schemas:calendar:dtstart\"\" &lt; '%3$s'";
+		xml += " \"DAV:contentclass\" = 'urn:content-classes:appointment'";
+		xml += " AND \"urn:schemas:calendar:dtstart\" &gt;= '%2$s'";
+		xml += " AND \"urn:schemas:calendar:dtstart\" &lt; '%3$s'";
 		xml += " ORDER BY";
-		xml += " \"\"urn:schemas:calendar:dtstart\"\" ASC";
+		xml += " \"urn:schemas:calendar:dtstart\" ASC";
 		xml += "</g:sql>";
 		xml += "</g:searchrequest>";
 
-		System.out.println("Accessing " + url);
-
-		byte[] body = EncodingUtils.getAsciiBytes(String.format(xml, url,
-				startText, endText));
+		System.out.println("Accessing " + url);		
+		
+		String input = String.format(xml, url, startText, endText);
+		byte[] body = EncodingUtils.getAsciiBytes(input);
 		HttpURLConnection connection = null;
 
 		try {
@@ -300,18 +301,23 @@ public class Exchange {
 			// accept all ssl certificate by default
 			if (address.getProtocol().toLowerCase().equals("https")) {
 				trustAllHosts();
-				HttpsURLConnection https = (HttpsURLConnection) address
-						.openConnection();
+				HttpsURLConnection https = (HttpsURLConnection) address.openConnection();
 				https.setHostnameVerifier(DO_NOT_VERIFY);
 				connection = https;
 			}
-
+			
+			//connection.setDefaultUseCaches(false);
+			//connection.setAllowUserInteraction(true);
+			connection.setDoInput(true);
 			connection.setDoOutput(true);
-			connection.setRequestMethod("SEARCH");
+			//connection.setUseCaches(false);
+			connection.setRequestMethod("POST");
+			//connection.setRequestProperty("Pragma","no-cache");
+			//connection.setRequestProperty("Cache-Control","no-cache");
 			connection.setRequestProperty("Content-Type", "text/xml");
-			connection.setRequestProperty("Content-Length",
-					String.valueOf(body.length));
-			// set login credentials cookies
+			connection.setRequestProperty("Content-Length", String.valueOf(body.length));
+			connection.setRequestProperty("Connection","Keep-Alive");
+			// set login credential cookies
 			for (String cookie : this.cookies) {
 				connection.addRequestProperty("Cookie", cookie.split(";", 2)[0]);
 			}
@@ -319,7 +325,7 @@ public class Exchange {
 			OutputStream output = connection.getOutputStream();
 			output.write(body);
 			output.close();
-
+			
 			String result = getResponseOutput(connection);
 			if (isValidXml(result)) {
 				appointments = extractAppointments(result);
@@ -342,15 +348,20 @@ public class Exchange {
 
 	/**
 	 * TODO: Extract appointment information from xml output.
+	 * 
 	 * @param xml
-	 * @see http://www.javacodegeeks.com/2010/10/android-full-app-part-3-parsing-xml.html
-	 * @see http://androidforums.com/application-development/62485-reading-data-xml-document.html
+	 * @see http 
+	 *      ://www.javacodegeeks.com/2010/10/android-full-app-part-3-parsing-
+	 *      xml.html
+	 * @see http 
+	 *      ://androidforums.com/application-development/62485-reading-data-xml
+	 *      -document.html
 	 * @return
 	 */
 	private List<Appointment> extractAppointments(String xml) {
-		
+
 		List<Appointment> appointments = new ArrayList<Appointment>();
-		
+
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder db;
 		try {
@@ -358,46 +369,49 @@ public class Exchange {
 			InputStream stream = new ByteArrayInputStream(xml.getBytes("UTF-8"));
 			Document document = db.parse(stream);
 			document.getDocumentElement().normalize();
-			
-            //Access each node of the returned XML
-            NodeList subjectNodes = document.getElementsByTagName("e:subject");
-            NodeList startTimeNodes = document.getElementsByTagName("d:dtstart");
-            NodeList locationNodes = document.getElementsByTagName("d:location");
-            NodeList endTimeNodes = document.getElementsByTagName("d:dtend");
-            NodeList organizerNodes = document.getElementsByTagName("d:organizer");
-            NodeList descriptionNodes = document.getElementsByTagName("e:textdescription");
-            //todo: NodeList attendeeNodes = document.getElementsByTagName("header:to");
-            //todo: NodeList optionalNodes = document.getElementsByTagName("header:cc");
-            //NodeList allDayEventNodes = document.getElementsByTagName("d:alldayevent");
-            //NodeList statusNodes = document.getElementsByTagName("d:busystatus");
-            NodeList recurrenceNodes = document.getElementsByTagName("d:recurrenceid");
-            NodeList sensitivityNodes = document.getElementsByTagName("f:sensitivity");
-            NodeList statusNodes = document.getElementsByTagName("d:meetingstatus");			
-			for(int i=0;i<organizerNodes.getLength();i++) {
-				
-				//@see http://msdn.microsoft.com/en-us/library/ms991449(v=exchg.65)
-				if(!statusNodes.item(i).getTextContent().toUpperCase().equals("CANCELLED")) {
-					//Parse the data into the appointment class
-                    Appointment appointment = new Appointment();
-                    appointment.setSubject(subjectNodes.item(i).getTextContent());
-                    appointment.setStart(new Date(Date.parse(startTimeNodes.item(i).getTextContent())));
-                    appointment.setEnd(new Date(Date.parse(endTimeNodes.item(i).getTextContent())));
-                    appointment.setNotes(descriptionNodes.item(i).getTextContent());
-                    
-                    appointment.setOrganizer(new Employee(organizerNodes.item(i).getTextContent()));
-                    appointment.setLocation(new Room(locationNodes.item(i).getTextContent()));
 
-                    if(recurrenceNodes.getLength()>0)
-                    	appointment.setIsRecurrance(Boolean.parseBoolean(recurrenceNodes.item(i).getTextContent()));
-                    
-                    Sensitivity sensitivity = Sensitivity.valueOf(sensitivityNodes.item(i).getTextContent());
-                    appointment.setSensitivity(sensitivity);
-                    		
-                    appointments.add(appointment);
+			// Access each node of the returned XML
+			NodeList subjectNodes = document.getElementsByTagName("e:subject");
+			NodeList startTimeNodes = document.getElementsByTagName("d:dtstart");
+			NodeList locationNodes = document.getElementsByTagName("d:location");
+			NodeList endTimeNodes = document.getElementsByTagName("d:dtend");
+			NodeList organizerNodes = document.getElementsByTagName("d:organizer");
+			NodeList descriptionNodes = document.getElementsByTagName("e:textdescription");
+			// todo: NodeList attendeeNodes = document.getElementsByTagName("header:to");
+			// todo: NodeList optionalNodes = document.getElementsByTagName("header:cc");
+			// NodeList allDayEventNodes = document.getElementsByTagName("d:alldayevent");
+			// NodeList statusNodes = document.getElementsByTagName("d:busystatus");
+			NodeList recurrenceNodes = document.getElementsByTagName("d:recurrenceid");
+			NodeList sensitivityNodes = document.getElementsByTagName("f:sensitivity");
+			NodeList statusNodes = document.getElementsByTagName("d:meetingstatus");
+			for (int i = 0; i < organizerNodes.getLength(); i++) {
+
+				// @see http://msdn.microsoft.com/en-us/library/ms991449(v=exchg.65)
+				if (!statusNodes.item(i).getTextContent().toUpperCase()
+						.equals("CANCELLED")) {
+					// Parse the data into the appointment class
+					Appointment appointment = new Appointment();
+					appointment.setSubject(subjectNodes.item(i).getTextContent());
+					appointment.setStart(new Date(Date.parse(startTimeNodes.item(i).getTextContent())));
+					appointment.setEnd(new Date(Date.parse(endTimeNodes.item(i).getTextContent())));
+					appointment.setNotes(descriptionNodes.item(i).getTextContent());
+
+					appointment.setOrganizer(new Employee(organizerNodes.item(i).getTextContent()));
+					appointment.setLocation(new Room(locationNodes.item(i).getTextContent()));
+
+					if (recurrenceNodes.getLength() > 0)
+						appointment.setIsRecurrance(
+								Boolean.parseBoolean(recurrenceNodes.item(i).getTextContent()));
+
+					Sensitivity sensitivity = Sensitivity.valueOf(
+							sensitivityNodes.item(i).getTextContent());
+					appointment.setSensitivity(sensitivity);
+
+					appointments.add(appointment);
 				}
-				
-			}//end loops
-			
+
+			}// end loops
+
 		} catch (ParserConfigurationException e) {
 			Log.e("ERROR", e.toString());
 			e.printStackTrace();
@@ -411,7 +425,6 @@ public class Exchange {
 			Log.e("ERROR", e.toString());
 			e.printStackTrace();
 		}
-		
 
 		return appointments;
 	}
@@ -425,12 +438,10 @@ public class Exchange {
 	private String getResponseOutput(HttpURLConnection connection) {
 
 		String output = "";
-		String line = "";
-		BufferedReader reader;
-
 		try {
-			reader = new BufferedReader(new InputStreamReader(
-					connection.getInputStream()));
+			String line = "";
+			BufferedReader reader = new BufferedReader(
+					new InputStreamReader(connection.getInputStream()));
 			while ((line = reader.readLine()) != null) {
 				output += line;
 			}
@@ -485,8 +496,8 @@ public class Exchange {
 	 * @return
 	 */
 	private String extractUrl(String source) {
+		
 		String url = "";
-
 		String regex = "\".*\"";
 		Pattern p = Pattern.compile(regex);
 		Matcher m = p.matcher(source);
@@ -500,6 +511,13 @@ public class Exchange {
 		return url;
 	}
 
+	/**
+	 * Equivalent to .net trim(char).
+	 * 
+	 * @see http 
+	 *      ://commons.apache.org/lang/api-2.5/org/apache/commons/lang/StringUtils
+	 *      .html
+	 */
 	private String strip(String str, String stripChars) {
 		return stripEnd(stripStart(str, stripChars), stripChars);
 	}
