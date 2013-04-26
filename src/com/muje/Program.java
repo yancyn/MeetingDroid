@@ -27,8 +27,8 @@ public class Program {
 	private static void GetAppointments() {
 		try {
 			ExchangeService service = new ExchangeService(ExchangeVersion.Exchange2010_SP2);
-			service.setCredentials(new WebCredentials("yeang-shing.then", "Q1,w2e3r4", "ap"));
-	        service.autodiscoverUrl("yeang-shing.then@plexus.com");
+			service.setCredentials(new WebCredentials("", "", "ap"));
+	        service.autodiscoverUrl("@company.com");
 	        
 	        // get my today appointment only
 	        Date start = new Date(new Date().getYear(), new Date().getMonth(), new Date().getDate());
