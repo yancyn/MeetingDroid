@@ -30,8 +30,8 @@ public class Program {
 			service.setCredentials(new WebCredentials("", "", "ap"));
 	        service.autodiscoverUrl("@company.com");
 	        
-	        // get my today appointment only
-	        Date start = new Date(new Date().getYear(), new Date().getMonth(), new Date().getDate());
+	        System.out.println("get my 2013-04-26 appointment only");
+	        Date start = new Date(2013-1900, 4-1, 26);//new Date().getYear(), new Date().getMonth(), new Date().getDate());
 			Date end = new Date(start.getYear(), start.getMonth(), start.getDate(), 23, 59, 59);
 			System.out.println("Start retrieving my own calendar item");
 	        CalendarView calendarView = new CalendarView(start, end);
@@ -46,7 +46,7 @@ public class Program {
 	        			appointment.getEnd()));
 	        }
 	        
-	        // get appointment for Japan room            
+	        System.out.println("get appointment for Japan room");            
             calendarView = new CalendarView(start, end);
             Mailbox mailbox = new Mailbox("atc_japan@plexus.com");
             FolderId calendarFolder = new FolderId(WellKnownFolderName.Calendar,mailbox);
