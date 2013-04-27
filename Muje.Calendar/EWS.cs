@@ -16,7 +16,7 @@ namespace Muje.Calendar
         /// <remarks>
         /// TODO: Extract to be configurable.
         /// </remarks>
-        private string url = "https://outlook-apac.plexus.com/exchange.asmx";
+        private string url = "https://outlook-apac.company.com/exchange.asmx";
 
         public EWS()
         {

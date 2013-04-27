@@ -10,24 +10,23 @@ using Microsoft.Exchange.WebServices.Data;
 
 using NUnit.Framework;
 
-namespace ChristSoft.Calendar.Test
+namespace Muje.Calendar.Test
 {
     [TestFixture]
     public class EWSTest
     {
-    	private static string user = "srvctgmatrix.pena";
-    	private static string password = "Plexus1234";
+    	private static string email = "";
+    	private static string password = "";
     	private static string domain = "ap";
     	
         /// <summary>
         /// Return exchange service by auto or manually set.
         /// </summary>
-        /// <param name="user">Exchange user name.</param>
+        /// <param name="email">Exchange email address.</param>
         /// <param name="password">Exchange password.</param>
         /// <param name="domain">Domain.</param>
-        /// <param name="auto">True if let the code auto recovery. False is manually.</param>
         /// <returns></returns>
-        private ExchangeService CreateService(string user, string password, string domain, bool auto)
+        private ExchangeService CreateService(string email, string password, string domain)
         {
             // Hook up the cert callback.
             System.Net.ServicePointManager.ServerCertificateValidationCallback =
@@ -42,21 +41,13 @@ namespace ChristSoft.Calendar.Test
                     // all certificates should be trusted.
                     return true;
                 };
-
-            //Exchange2007 not support
-            //Exchange2010_SP2 not support
+            
+            string user = email.Substring(0,email.IndexOf("@"));
+            System.Diagnostics.Debug.WriteLine("User: "+user);
             ExchangeService service = new ExchangeService(ExchangeVersion.Exchange2010_SP2);
-            if (auto)
-            {
-                service.Credentials = new WebCredentials(user, password,domain);
-                service.AutodiscoverUrl("srvctgmatrix.pena@plexus.com", ValidateRedirectionUrlCallback);
-                System.Diagnostics.Debug.WriteLine(service.Url);
-            }
-            else
-            {
-            	service.Credentials = new NetworkCredential(user,password,domain);
-                service.Url = new Uri("https://outlook-apac.plexus.com/EWS/Exchange.asmx");
-            }
+            service.Credentials = new WebCredentials(user, password,domain);
+            service.AutodiscoverUrl(email, ValidateRedirectionUrlCallback);
+            System.Diagnostics.Debug.WriteLine(service.Url);
 
             //service.TraceEnabled = true;
             System.Diagnostics.Debug.WriteLine("login success");
@@ -75,13 +66,13 @@ namespace ChristSoft.Calendar.Test
         [Test]
         public void GetServiceUrlTest()
         {
-            ExchangeService service = CreateService(user,password,domain,true);
+            ExchangeService service = CreateService(email,password,domain);
             System.Diagnostics.Debug.WriteLine("url:" + service.Url);
         }
         [Test]
         public void GetRoomListTest()
         {
-            ExchangeService service = CreateService(user,password,domain,true);
+            ExchangeService service = CreateService(email,password,domain);
 
             int actual = 0;
             //            System.Diagnostics.Debug.WriteLine("start get room list");
@@ -114,7 +105,7 @@ namespace ChristSoft.Calendar.Test
         [Test]
         public void GetAllRoomListTest()
         {
-            ExchangeService service = CreateService(user,password,domain,true);
+            ExchangeService service = CreateService(email,password,domain);
             EmailAddressCollection myRoomLists = service.GetRoomLists();
             int count = 0;
             foreach (EmailAddress address in myRoomLists)
@@ -129,7 +120,7 @@ namespace ChristSoft.Calendar.Test
         [Test]
         public void GetMyAppointmentsTest()
         {
-            ExchangeService service = CreateService("yeang-shing.then","Q1,w2e3r4",domain,true);
+            ExchangeService service = CreateService("","",domain);
             System.Diagnostics.Debug.WriteLine("start retrieve calendar item");
             int actual = 0;
             DateTime today = DateTime.Now;
@@ -148,7 +139,7 @@ namespace ChristSoft.Calendar.Test
         [Test]
         public void GetAppointmentsByFolderIdTest()
         {
-            ExchangeService service = CreateService(user,password,domain,true);
+            ExchangeService service = CreateService(email,password,domain);
             //my calendar
             FolderId folderId = new FolderId("AAMkADMzODYyNWIyLTU5MGUtNGViYi1iZDU0LTk3ZDAwN2U2OWYyYQAuAAAAAABCfv2r7KIYQJ1URnB9fSA0AQDtQpzCCPu0S6i6b+LxHkSIAAAAv71WAAA=");
             System.Diagnostics.Debug.WriteLine(folderId.ToString());
@@ -185,7 +176,7 @@ namespace ChristSoft.Calendar.Test
         [Test]
         public void GetMSOLKAllCalendarItemsTest()
         {
-            ExchangeService service = CreateService(user,password,domain,true);
+            ExchangeService service = CreateService(email,password,domain);
             service.TraceEnabled = false;
 
             FolderId folderId = new FolderId("AAMkADMzODYyNWIyLTU5MGUtNGViYi1iZDU0LTk3ZDAwN2U2OWYyYQAuAAAAAABCfv2r7KIYQJ1URnB9fSA0AQDtQpzCCPu0S6i6b+LxHkSIAAACGkVBAAA=");
@@ -208,14 +199,14 @@ namespace ChristSoft.Calendar.Test
 
         public void FindItemTest()
         {
-            ExchangeService service = CreateService(user,password,domain,true);
+            ExchangeService service = CreateService(email,password,domain);
             //service.FindAppointments(WellKnownFolderName.
             //service.FindAppointments(
         }
         [Test]
         public void GetAllCalendarItemsTest()
         {
-            ExchangeService service = CreateService(user,password,domain,true);
+            ExchangeService service = CreateService(email,password,domain);
 
             FolderId folderId = new FolderId("AAMkADMzODYyNWIyLTU5MGUtNGViYi1iZDU0LTk3ZDAwN2U2OWYyYQAuAAAAAABCfv2r7KIYQJ1URnB9fSA0AQDtQpzCCPu0S6i6b+LxHkSIAAAAv71WAAA=");
             System.Diagnostics.Debug.WriteLine(folderId.ToString());
@@ -228,7 +219,7 @@ namespace ChristSoft.Calendar.Test
         public void GetAllCalendarItemsTest2()
         {
             int actual = 0;
-            ExchangeService service = CreateService(user,password,domain,true);
+            ExchangeService service = CreateService(email,password,domain);
             Folder folder = Folder.Bind(service, WellKnownFolderName.Calendar);
             FindFoldersResults results = folder.FindFolders(new FolderView(50));
             foreach (Folder f in results.Folders)
@@ -242,7 +233,7 @@ namespace ChristSoft.Calendar.Test
         [Test]
         public void ListAllFoldersTest()
         {
-            ExchangeService service = CreateService(user,password,domain,false);
+            ExchangeService service = CreateService(email,password,domain);
             service.TraceEnabled = false;
 
             FindFolder(service, 0);
@@ -251,7 +242,7 @@ namespace ChristSoft.Calendar.Test
         [Test]
         public void ListCalendarFoldersTest()
         {
-            ExchangeService service = CreateService(user,password,domain,true);
+            ExchangeService service = CreateService(email,password,domain);
             service.TraceEnabled = false;
 
             FolderView view = new FolderView(100);
@@ -320,7 +311,7 @@ namespace ChristSoft.Calendar.Test
         {        	
         	List<Appointment> output = new List<Appointment>();
         	
-        	ExchangeService service = CreateService(user,password,domain,true);        	
+        	ExchangeService service = CreateService(email,password,domain);        	
             DateTime start = new DateTime(date.Year, date.Month,date.Day);
             DateTime end = start.AddDays(1).Subtract(new TimeSpan(1));
             
@@ -385,7 +376,7 @@ namespace ChristSoft.Calendar.Test
         [Test]
         public void GetItemTest()
         {
-            ExchangeService service = CreateService(user,password,domain,true);
+            ExchangeService service = CreateService(email,password,domain);
             ItemId itemId = new ItemId("LgAAAABCfv2r7KIYQJ1URnB9fSA0AQDtQpzCCPu0S6i6b+LxHkSIAAAAv71WAAAC");
             //service.F
         }
@@ -393,7 +384,7 @@ namespace ChristSoft.Calendar.Test
         [Test]
         public void ListInboxItemTest()
         {
-            ExchangeService service = CreateService(user,password,domain,false);
+            ExchangeService service = CreateService(email,password,domain);
             service.TraceEnabled = false;
 
             System.Diagnostics.Debug.WriteLine("start retrieve item at inbox");
@@ -415,7 +406,7 @@ namespace ChristSoft.Calendar.Test
         {
             //ConfRm Penang
             int count = 0;
-            ExchangeService service = CreateService(user,password,domain,true);
+            ExchangeService service = CreateService(email,password,domain);
             System.Diagnostics.Debug.WriteLine("start listing contact");
             ItemView view = new ItemView(50);
             foreach (Item item in service.FindItems(WellKnownFolderName.Contacts, view))
@@ -432,7 +423,7 @@ namespace ChristSoft.Calendar.Test
         [Test]
         public void ResolveNameTest()
         {
-            ExchangeService service = CreateService(user,password,domain,true);
+            ExchangeService service = CreateService(email,password,domain);
             NameResolutionCollection nameResolutions = service.ResolveName(
                 "ConfRm",
                 ResolveNameSearchLocation.DirectoryThenContacts, true);
@@ -488,7 +479,7 @@ namespace ChristSoft.Calendar.Test
             //ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
             //myService.Url = new Uri("https://outlook-apac.plexus.com/exchange.asmx");
             //System.Diagnostics.Debug.WriteLine("login success");
-            ExchangeService myService = CreateService(user,password,domain,true);
+            ExchangeService myService = CreateService(email,password,domain);
 
             Folder myPublicFoldersRoot = Folder.Bind(myService, WellKnownFolderName.Calendar);//PublicFoldersRoot);
             //string myPublicFolderPath = @"OK soft GmbH (DE)\Gruppenpostfächer\_Template - Gruppenpostfach\_Template - Kalender";
