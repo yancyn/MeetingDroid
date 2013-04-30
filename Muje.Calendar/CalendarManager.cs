@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Configuration;
+using Microsoft.Exchange.WebServices.Data;
 
 namespace Muje.Calendar
 {
     public class CalendarManager: CalendarBase
     {
         private CalendarBase calendar;
+    	
         public CalendarManager()
         {
             switch (ConfigurationManager.AppSettings["CalendarProvider"].ToString())
