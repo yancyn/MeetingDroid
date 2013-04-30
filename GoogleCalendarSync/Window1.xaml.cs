@@ -18,15 +18,9 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 
-using DotNetOpenAuth.OAuth2;
-using Google.Apis.Authentication;
-using Google.Apis.Authentication.OAuth2;
-using Google.Apis.Authentication.OAuth2.DotNetOpenAuth;
-using Google.Apis.Calendar.v3;
 using Google.Apis.Calendar.v3.Data;
-using Google.Apis.Samples.Helper;
-using Google.Apis.Services;
-using Google.Apis.Util;
+using Microsoft.Exchange.WebServices.Data;
+using Muje.Calendar;
 
 namespace GoogleCalendarSync
 {
@@ -39,74 +33,70 @@ namespace GoogleCalendarSync
 		{
 			InitializeComponent();
 		}
-		
-		public void DisplayEvents()
-        {
-			try
-			{
-	            var provider = new NativeApplicationClient(GoogleAuthenticationServer.Description)
-				{
-					ClientIdentifier = ClientCredentials.ClientID,
-					ClientSecret = ClientCredentials.ClientSecret
-				};
-				var auth = new OAuth2Authenticator<NativeApplicationClient>(provider, GetAuthorization);
-				CalendarService service = new CalendarService(
-					new BaseClientService.Initializer(){Authenticator = auth}
-				);
-				
-				// @see http://stackoverflow.com/questions/8537681/google-api-v3-for-dotnet-using-the-calendar-with-an-api-key				
-				EventLists.ItemsSource = service.Events.List(ClientCredentials.CalendarId).Fetch().Items;
-//				foreach(Event i in service.Events.List("").Fetch().Items)
-//				{
-//					i.Location, i.Start.DateTime, i.End, i.Attendees
-//					System.Diagnostics.Debug.WriteLine(i.Summary);
-//				}
-			}
-			catch(Exception ex)
-			{
-				MessageBox.Show(ex.ToString());
-				throw ex;
-			}
-        }
 		//private Expander CreateUIEventList(Event e, 
-
-		/// <summary>
-		/// TODO: Obtain cache session.
-		/// </summary>
-		/// <param name="client"></param>
-		/// <returns></returns>
-        private static IAuthorizationState GetAuthorization(NativeApplicationClient client)
-        {
-            // You should use a more secure way of storing the key here as
-            // .NET applications can be disassembled using a reflection tool.
-            //const string STORAGE = "google.calendars";
-            //const string KEY = "x{,erdzf11x9;89";
-            string scope = CalendarService.Scopes.Calendar.GetStringValue();
-
-            // Check if there is a cached refresh token available.
-//            IAuthorizationState state = AuthorizationMgr.GetCachedRefreshToken(STORAGE, KEY);
-//            if (state != null)
-//            {
-//                try
-//                {
-//                    client.RefreshToken(state);
-//                    return state; // Yes - we are done.
-//                }
-//                catch (DotNetOpenAuth.Messaging.ProtocolException ex)
-//                {
-//                    CommandLine.WriteError("Using existing refresh token failed: " + ex.Message);
-//                }
-//            }
-
-            // Retrieve the authorization from the user.
-            IAuthorizationState state = AuthorizationMgr.RequestNativeAuthorization(client, scope);
-            //AuthorizationMgr.SetCachedRefreshToken(STORAGE, KEY, state);
-            return state;
-        }
 		
 		void window1_Initialized(object sender, EventArgs e)
 		{
-			DisplayEvents();
+			/**
+			 * 1. Retrieve 30 days appointments from Outlook. Starting from DateTime.Now. Ignore pass appointment.
+			 * 2. Verify whether any updates or new in primary Google Calendar if so just update or insert.
+			 * 3. Run periodically, configure as 4h, 6h or manually.
+			 * 4. Done.
+			 */
+			
+			GoogleCalendar calendar = new GoogleCalendar();
+			List<Event> events = new List<Event>();
+			
+			int stopper = 0;
+			EWS ews = new EWS();
+			List<Appointment> appointments = ews.GetAppointments(
+				ConfigurationManager.AppSettings["ExchangeEmail"].ToString(),
+				new DateTime(2013,5,3), DateTime.Now.AddDays(30));
+			foreach(Appointment appointment in appointments)
+			{
+				if(stopper >= 10) break;
+				PrintAppointment(appointment);
+				calendar.Insert(appointment);
+				
+				Event i = new Event();
+				//i.Id = appointment.Id.ToString();
+				i.Summary = appointment.Subject;
+				i.Location = appointment.Location;
+				
+				EventDateTime start = new EventDateTime();
+				start.DateTime = appointment.Start.ToUniversalTime().ToString();//ToString("yyyy-MM-ddTHH:mmzzz");
+				start.TimeZone = appointment.Start.ToString("zzz");
+				i.Start = start;
+				
+				EventDateTime end = new EventDateTime();
+				end.DateTime = appointment.End.ToUniversalTime().ToString();//.ToString("yyyy-MM-ddTHH:mmzzz");
+				end.TimeZone = appointment.End.ToString("zzz");
+				i.End = end;
+				events.Add(i);
+				break;
+				
+				stopper ++;
+			}
+			
+			// TODO: set newly added event into notification area
+			//GoogleCalendar calendar = new GoogleCalendar();
+			//List<Event> events = calendar.Retrieve(DateTime.Now, DateTime.Now.AddDays(30));
+			EventLists.ItemsSource = events;
+		}
+		private void PrintAppointment(Appointment appointment)
+		{			
+			string output = string.Empty;
+			output += appointment.Id.ToString() + "\t";//ChangeKey //UniqueId
+			output += appointment.Subject;
+			output += "["+appointment.Location+"]";
+			output += "("+appointment.Start.ToString("yyyy-MM-ddTHH:mmzzz")+")";
+			//output += " ("+appointment.Start.ToString("yyyy-MM-dd HH:mm") + " - "+appointment.End.ToString("HH:mm") + ") ";
+			output += appointment.Organizer.Name + ";";
+			for(int i=0;i<appointment.RequiredAttendees.Count;i++)
+				output += appointment.RequiredAttendees[i].Name + ";";
+			for(int i=0;i<appointment.OptionalAttendees.Count;i++)
+				output += appointment.OptionalAttendees[i].Name + ";";
+			System.Diagnostics.Debug.WriteLine(output);
 		}
 	}
 }

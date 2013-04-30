@@ -94,8 +94,8 @@ namespace Muje.Calendar
             foreach(Appointment appointment in result)
             {
             	output.Add(appointment);
-                System.Diagnostics.Debug.WriteLine(string.Format("{0}({1}-{2})",
-                    appointment.Subject, appointment.Start, appointment.End.ToShortTimeString()));
+//                System.Diagnostics.Debug.WriteLine(string.Format("{0}({1}-{2})",
+//                    appointment.Subject, appointment.Start, appointment.End.ToShortTimeString()));
             }
             
             return output;

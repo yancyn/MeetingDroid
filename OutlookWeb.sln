@@ -22,6 +22,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Muje.Calendar.Test", "Muje.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoogleCalendarSync", "GoogleCalendarSync\GoogleCalendarSync.csproj", "{BA842133-9675-4149-BE80-A48030A695AF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EE8A79C1-D754-4EFA-BDC8-78B51D662F1C}"
+	ProjectSection(SolutionItems) = postProject
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

@@ -97,7 +97,6 @@
       <SubType>Code</SubType>
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ClientCredentials.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\WPFAssemblyInfo.cs" />
     <Compile Include="Window1.xaml.cs">
@@ -112,6 +111,12 @@
     <None Include="app.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Muje.Calendar\Muje.Calendar.csproj">
+      <Project>{0774983D-7941-46BB-A7A8-0A54B9A58BB6}</Project>
+      <Name>Muje.Calendar</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

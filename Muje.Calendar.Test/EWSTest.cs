@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Security;
@@ -15,9 +16,16 @@ namespace Muje.Calendar.Test
     [TestFixture]
     public class EWSTest
     {
-    	private static string email = "";
-    	private static string password = "";
-    	private static string domain = "ap";
+    	private static string email = ConfigurationManager.AppSettings["ExchangeEmail"].ToString();
+    	private static string password = ConfigurationManager.AppSettings["ExchangePassword"].ToString();
+    	private static string domain = ConfigurationManager.AppSettings["Domain"].ToString();
+    	private EWS target;
+    	
+    	[SetUp]
+    	public void Initialize()
+    	{
+    		target = new EWS();
+    	}
     	
         /// <summary>
         /// Return exchange service by auto or manually set.
@@ -69,6 +77,61 @@ namespace Muje.Calendar.Test
             ExchangeService service = CreateService(email,password,domain);
             System.Diagnostics.Debug.WriteLine("url:" + service.Url);
         }
+        
+        [Test]
+        public void GetMyAppointmentsTest()
+        {
+        	// Expected today has meeting at least
+            Assert.AreNotEqual(0, target.GetAppointments(DateTime.Now).Count);
+        }
+        [Test]
+        public void GetAppointmentsAtAustraliaRoomTest()
+        {
+        	int actual = target.GetAppointments(new Room{Email="atc_australia@plexus.com"},DateTime.Now).Count;
+        	Assert.AreNotEqual(0, actual);
+        }
+        [Test]
+        public void GetAppointmentsAtPorscheRoomTest()
+        {
+        	int actual = target.GetAppointments(new Room{Email="confrmatctg_porsche@exchange.plexus.com"},new DateTime(2012, 10, 1)).Count;
+        	Assert.AreNotEqual(0, actual);        	
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <seealso cref="">http://stackoverflow.com/questions/6391919/cant-retrieve-resources-rooms-from-exchange-web-services</seealso>
+        [Test]
+        public void GetAppointmentsAtNewZealandTest()
+        {
+        	int actual = target.GetAppointments(new Room{Email="atc_newzealand@plexus.com"},DateTime.Now).Count;
+        	Assert.AreNotEqual(0, actual);
+        }
+        [Test]
+        public void GetAppointmentsAtPhilippinesRoomTest()
+        {
+        	int actual = target.GetAppointments(new Room{Email="atc_philippines@plexus.com"},DateTime.Now).Count;
+        	Assert.AreNotEqual(0, actual);
+        }
+        /// <summary>
+        /// "ConfRm Hangzhou - Dongting Lake"
+        /// </summary>
+        [Test]
+        public void GetAppointmentsAtDongtingLakeTest()
+        {        	
+        	int actual = target.GetAppointments(new Room{Email="hz_dongtinglake@plexus.com"},DateTime.Now).Count;
+        	Assert.AreNotEqual(0, actual);
+        }
+        [Test]
+        public void GetAppointmentsAtJapanTest()
+        {
+        	int actual = target.GetAppointments(new Room{Email="atc_japan@plexus.com"},new DateTime(2013,4,24)).Count;
+        	Assert.AreEqual(5,actual);
+        }
+        
+        
+        
+        
+        // NOT TESTED
         [Test]
         public void GetRoomListTest()
         {
@@ -115,25 +178,6 @@ namespace Muje.Calendar.Test
             }
 
             Assert.AreNotEqual(0, count);
-        }
-
-        [Test]
-        public void GetMyAppointmentsTest()
-        {
-            ExchangeService service = CreateService("","",domain);
-            System.Diagnostics.Debug.WriteLine("start retrieve calendar item");
-            int actual = 0;
-            DateTime today = DateTime.Now;
-            CalendarView calendarView = new CalendarView(new DateTime(today.Year, today.Month, 1),
-                                                         new DateTime(today.Year, today.Month, DateTime.DaysInMonth(today.Year,today.Month), 23, 59, 59));
-            foreach (Appointment appointment in service.FindAppointments(WellKnownFolderName.Calendar, calendarView))
-            {
-                System.Diagnostics.Debug.WriteLine(string.Format("{0}: {1}({2}-{3})",
-                    appointment.Location, appointment.Subject, appointment.Start, appointment.End.ToShortTimeString()));
-                actual++;
-            }
-
-            Assert.AreNotEqual(0, actual);
         }
 
         [Test]
@@ -306,73 +350,7 @@ namespace Muje.Calendar.Test
                     FindFolder(f, indent + 1);
             }
         }
-
-        private List<Appointment> GetAppointments(string roomEmail, DateTime date)
-        {        	
-        	List<Appointment> output = new List<Appointment>();
-        	
-        	ExchangeService service = CreateService(email,password,domain);        	
-            DateTime start = new DateTime(date.Year, date.Month,date.Day);
-            DateTime end = start.AddDays(1).Subtract(new TimeSpan(1));
-            
-            CalendarView calendarView = new CalendarView(start, end);
-            Mailbox mailbox = new Mailbox(roomEmail);
-            FolderId calendarFolder = new FolderId(WellKnownFolderName.Calendar,mailbox);
-            
-            System.Diagnostics.Debug.WriteLine("start retrieve calendar item");
-            FindItemsResults<Appointment> result = service.FindAppointments(calendarFolder,calendarView);            
-            foreach(Appointment appointment in result)
-            {
-            	output.Add(appointment);
-                System.Diagnostics.Debug.WriteLine(string.Format("{0}({1}-{2})",
-                    appointment.Subject, appointment.Start, appointment.End.ToShortTimeString()));
-            }
-            
-            return output;
-        }
-        [Test]
-        public void GetAppointmentsAtPorscheRoomTest()
-        {
-            int actual = GetAppointments("confrmatctg_porsche@exchange.plexus.com", new DateTime(2012, 10, 1)).Count;
-        	Assert.AreNotEqual(0, actual);            
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <seealso cref="">http://stackoverflow.com/questions/6391919/cant-retrieve-resources-rooms-from-exchange-web-services</seealso>
-        [Test]
-        public void GetAppointmentsAtNewZealandTest()
-        {
-        	int actual = GetAppointments("atc_newzealand@plexus.com", DateTime.Now).Count;
-        	Assert.AreNotEqual(0, actual);
-        }
-        [Test]
-        public void GetAppointmentsAtPhilippinesRoomTest()
-        {
-            int actual = GetAppointments("atc_philippines@plexus.com", DateTime.Now).Count;
-        	Assert.AreNotEqual(0, actual);
-        }
-        [Test]
-        public void GetAppointmentsAtAustraliaRoomTest()
-        {
-			int actual = GetAppointments("atc_australia@plexus.com", DateTime.Now).Count;
-        	Assert.AreNotEqual(0, actual);
-        }
-        /// <summary>
-        /// "ConfRm Hangzhou - Dongting Lake"
-        /// </summary>
-        [Test]
-        public void GetAppointmentsAtDongtingLakeTest()
-        {            
-            int actual = GetAppointments("hz_dongtinglake@plexus.com", DateTime.Now).Count;
-        	Assert.AreNotEqual(0, actual);
-        }
-        [Test]
-        public void GetAppointmentsAtJapanTest()
-        {
-        	int actual = GetAppointments("atc_japan@plexus.com", new DateTime(2013,4,24)).Count;
-        	Assert.AreEqual(5,actual);
-        }
+        
         [Test]
         public void GetItemTest()
         {
@@ -380,7 +358,6 @@ namespace Muje.Calendar.Test
             ItemId itemId = new ItemId("LgAAAABCfv2r7KIYQJ1URnB9fSA0AQDtQpzCCPu0S6i6b+LxHkSIAAAAv71WAAAC");
             //service.F
         }
-
         [Test]
         public void ListInboxItemTest()
         {

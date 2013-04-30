@@ -30,11 +30,28 @@
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DotNetOpenAuth">
+      <HintPath>..\lib\DotNetOpenAuth.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis">
+      <HintPath>..\lib\Google.Apis.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.Authentication.OAuth2">
+      <HintPath>..\lib\Google.Apis.Authentication.OAuth2.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.Calendar.v3">
+      <HintPath>..\lib\Google.Apis.Calendar.v3.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.Samples.Helper">
+      <HintPath>..\lib\Google.Apis.Samples.Helper.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Exchange.WebServices">
       <HintPath>..\lib\Microsoft.Exchange.WebServices.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json.Net35">
+      <HintPath>..\lib\Newtonsoft.Json.Net35.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Configuration" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -47,8 +64,10 @@
   <ItemGroup>
     <Compile Include="CalendarBase.cs" />
     <Compile Include="CalendarManager.cs" />
+    <Compile Include="ClientCredentials.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="EWS.cs" />
+    <Compile Include="GoogleCalendar.cs" />
     <Compile Include="Outlook.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Room.cs" />
