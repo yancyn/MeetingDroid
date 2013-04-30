@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
+using System.Configuration;
 using Google.Apis.Samples.Helper;
 
 namespace GoogleCalendarSync
@@ -34,17 +34,22 @@ namespace GoogleCalendarSync
         /// <summary>
         /// The OAuth2.0 Client ID of your project.
         /// </summary>
-        public static readonly string ClientID = "";
+        public static readonly string ClientID = ConfigurationManager.AppSettings["ClientID"].ToString();
 
         /// <summary>
         /// The OAuth2.0 Client secret of your project.
         /// </summary>
-        public static readonly string ClientSecret = "";
+        public static readonly string ClientSecret = ConfigurationManager.AppSettings["ClientSecret"].ToString();
 
         /// <summary>
         /// Your Api/Developer key.
         /// </summary>
-        public static readonly string ApiKey = "";
+        public static readonly string ApiKey = ConfigurationManager.AppSettings["Api"].ToString();
+        
+        /// <summary>
+        /// You calendar Id. Normally is your gmail full address. ie. youremail@gmail.com
+        /// </summary>
+        public static readonly string CalendarId = ConfigurationManager.AppSettings["CalendarId"].ToString();
 
         #region Verify Credentials
         static ClientCredentials()

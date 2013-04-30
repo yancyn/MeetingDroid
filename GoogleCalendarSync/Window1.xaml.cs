@@ -7,6 +7,7 @@
  * To change this template use Tools | Options | Coding | Edit Standard Headers.
  */
 using System;
+using System.Configuration;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -53,18 +54,8 @@ namespace GoogleCalendarSync
 					new BaseClientService.Initializer(){Authenticator = auth}
 				);
 				
-				// @see http://stackoverflow.com/questions/8537681/google-api-v3-for-dotnet-using-the-calendar-with-an-api-key
-//				foreach(CalendarListEntry entry in service.CalendarList.List().Fetch().Items)
-//					System.Diagnostics.Debug.WriteLine(entry.Summary);
-				
-				//Calendar primary = service.Calendars.Get("").Fetch();
-				//System.Diagnostics.Debug.WriteLine(primary.Summary);
-				
-				//Event e = service.Events.Get("","s5ibdoum1jk6omru23dg1is8pc").Fetch();
-				//System.Diagnostics.Debug.WriteLine(e.Summary);
-				
-				EventLists.Items.Clear();
-				EventLists.ItemsSource = service.Events.List("").Fetch().Items;
+				// @see http://stackoverflow.com/questions/8537681/google-api-v3-for-dotnet-using-the-calendar-with-an-api-key				
+				EventLists.ItemsSource = service.Events.List(ClientCredentials.CalendarId).Fetch().Items;
 //				foreach(Event i in service.Events.List("").Fetch().Items)
 //				{
 //					i.Location, i.Start.DateTime, i.End, i.Attendees
