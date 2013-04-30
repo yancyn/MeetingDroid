@@ -2,18 +2,25 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 # SharpDevelop 4.3
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{4D5989F7-2922-425B-AF11-CBB9E2BD221E}"
+	ProjectSection(SolutionItems) = postProject
+		lib\Microsoft.Exchange.WebServices.dll = lib\Microsoft.Exchange.WebServices.dll
+		lib\Microsoft.Office.Interop.Outlook.dll = lib\Microsoft.Office.Interop.Outlook.dll
+		lib\nunit.framework.dll = lib\nunit.framework.dll
+		lib\Google.Apis.Calendar.v3.dll = lib\Google.Apis.Calendar.v3.dll
+		lib\Google.Apis.Authentication.OAuth2.dll = lib\Google.Apis.Authentication.OAuth2.dll
+		lib\DotNetOpenAuth.dll = lib\DotNetOpenAuth.dll
+		lib\Google.Apis.dll = lib\Google.Apis.dll
+		lib\Newtonsoft.Json.Net35.dll = lib\Newtonsoft.Json.Net35.dll
+	EndProjectSection
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutlookWeb", "OutlookWeb\OutlookWeb.csproj", "{21F5D96A-25F2-4B23-8E46-938B864F1A97}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Muje.Calendar", "Muje.Calendar\Muje.Calendar.csproj", "{0774983D-7941-46BB-A7A8-0A54B9A58BB6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Muje.Calendar.Test", "Muje.Calendar.Test\Muje.Calendar.Test.csproj", "{98CD7E19-C557-4DD0-897E-1C24CD147EB8}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{4D5989F7-2922-425B-AF11-CBB9E2BD221E}"
-	ProjectSection(SolutionItems) = postProject
-		lib\Microsoft.Exchange.WebServices.dll = lib\Microsoft.Exchange.WebServices.dll
-		lib\Microsoft.Office.Interop.Outlook.dll = lib\Microsoft.Office.Interop.Outlook.dll
-		lib\nunit.framework.dll = lib\nunit.framework.dll
-	EndProjectSection
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoogleCalendarSync", "GoogleCalendarSync\GoogleCalendarSync.csproj", "{BA842133-9675-4149-BE80-A48030A695AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,5 +40,9 @@ Global
 		{98CD7E19-C557-4DD0-897E-1C24CD147EB8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{98CD7E19-C557-4DD0-897E-1C24CD147EB8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{98CD7E19-C557-4DD0-897E-1C24CD147EB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA842133-9675-4149-BE80-A48030A695AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA842133-9675-4149-BE80-A48030A695AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA842133-9675-4149-BE80-A48030A695AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA842133-9675-4149-BE80-A48030A695AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 EndGlobal
