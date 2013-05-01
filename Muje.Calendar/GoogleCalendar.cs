@@ -379,6 +379,12 @@ namespace Muje.Calendar
 			}
 		}
 		
+		/// <summary>
+		/// Determine appointment uniqueness.
+		/// </summary>
+		/// <param name="appointment"></param>
+		/// <param name="events"></param>
+		/// <returns></returns>
 		public bool Contains(Appointment appointment, List<Event> events)
 		{
 			foreach(Event e in events)
@@ -387,9 +393,14 @@ namespace Muje.Calendar
 				int end = e.Summary.IndexOf("at");
 				if(end > -1) subjectOnly = e.Summary.Substring(0, end).Trim();
 				
-				if(e.Summary.Equals(appointment.Subject)
-				   || subjectOnly.Equals(appointment.Subject))
-					return true;
+				if(e.Summary.Equals(appointment.Subject) || subjectOnly.Equals(appointment.Subject))
+				{
+					if(e.Start != null && e.Start.DateTime.Length >= 10)
+					{
+						DateTime start = DateTime.Parse(e.Start.DateTime);
+						return true;
+					}
+				}
 			}
 			
 			return false;

@@ -29,25 +29,79 @@ namespace GoogleCalendarSync
 	/// </summary>
 	public partial class Window1 : Window
 	{
+		private bool alreadyFocus = false;
 		public Window1()
 		{
 			InitializeComponent();
+			
+			// TODO: http://www.hardcodet.net/projects/wpf-notifyicon
+			// Create NotifyIcon at system tray
+			System.Windows.Forms.NotifyIcon ni = new System.Windows.Forms.NotifyIcon();
+			ni.Icon = new System.Drawing.Icon("cal.ico");
+			ni.Visible = true;
+			ni.ContextMenuStrip = InitialMenu();
+			ni.DoubleClick += delegate(object sender, EventArgs e) { Notify();};
 		}
-		//private Expander CreateUIEventList(Event e, 
+		private System.Windows.Forms.ContextMenuStrip InitialMenu()
+		{
+			System.Windows.Forms.ContextMenuStrip menu = new System.Windows.Forms.ContextMenuStrip();
+			
+			System.Windows.Forms.ToolStripMenuItem m0 = new System.Windows.Forms.ToolStripMenuItem();
+			m0.Text = "Sync";
+			m0.Click += delegate(object sender, EventArgs e) { Sync();Notify(); };
+			menu.Items.Add(m0);
+			
+			// TODO: Add setting form
+			System.Windows.Forms.ToolStripMenuItem m1 = new System.Windows.Forms.ToolStripMenuItem();
+			m1.Text = "Setting";
+			m1.Click += delegate(object sender, EventArgs e) {  };
+			menu.Items.Add(m1);
+			
+			System.Windows.Forms.ToolStripMenuItem m2 = new System.Windows.Forms.ToolStripMenuItem();
+			m2.Text = "Close";
+			m2.Click += delegate(object sender, EventArgs e) { this.Close(); };
+			menu.Items.Add(m2);
+			
+			return menu;
+		}
 		
 		void window1_Initialized(object sender, EventArgs e)
 		{
-			System.Diagnostics.Debug.WriteLine("window1_Inititialized");
+			System.Diagnostics.Debug.WriteLine("window1_Inititialized");			
+			//Sync();Test()
+		}
+		private void Test()
+		{
+			List<Event> events = new List<Event>();
 			
+			GoogleCalendar calendar = new GoogleCalendar();
+			calendar.Login();
+			List<Event> existing = calendar.Retrieve(DateTime.Now, DateTime.Now.AddDays(30));
+			
+			int stopper = 0;
+			foreach(Event i in existing)
+			{
+				if(stopper == 5) break;
+				events.Add(i);
+				stopper ++;
+			}
+			
+			// set newly added event into notification area			
+			EventLists.ItemsSource = events;
+		}
+		/// <summary>
+		/// 
+		/// </summary>
+		private void Sync()
+		{
 			/**
 			 * 1. Retrieve 30 days appointments from Outlook. Starting from DateTime.Now. Ignore pass appointment.
 			 * 2. Verify whether any updates or new in primary Google Calendar if so just update or insert.
 			 * 3. Run periodically, configure as 4h, 6h or manually.
 			 * 4. Done.
 			 */
-			
 			List<Event> events = new List<Event>();
-			
+
 			EWS ews = new EWS();
 			List<Appointment> appointments = ews.GetAppointments(ConfigurationManager.AppSettings["ExchangeEmail"].ToString(), DateTime.Now, DateTime.Now.AddDays(30));
 			
@@ -59,6 +113,7 @@ namespace GoogleCalendarSync
 			{
 				if(!calendar.Contains(appointment, existing))
 				{
+					PrintAppointment(appointment);
 					calendar.Insert(appointment);
 					
 					Event i = new Event();
@@ -78,9 +133,14 @@ namespace GoogleCalendarSync
 					events.Add(i);
 				}
 			}
-			
-			// set newly added event into notification area			
+
 			EventLists.ItemsSource = events;
+		}
+		private void Notify()
+		{
+			this.Show();
+			this.Visibility = Visibility.Visible;
+			alreadyFocus = false;
 		}
 		private void PrintAppointment(Appointment appointment)
 		{			
@@ -110,6 +170,17 @@ namespace GoogleCalendarSync
 			System.Diagnostics.Debug.WriteLine("Client: "+this.RenderSize);
 			this.Left = System.Windows.SystemParameters.PrimaryScreenWidth - this.RenderSize.Width;
 			this.Top = System.Windows.SystemParameters.PrimaryScreenHeight - this.RenderSize.Height - GetTaskbarHeight();
+		}		
+		void Window_MouseLeave(object sender, MouseEventArgs e)
+		{
+			System.Diagnostics.Debug.WriteLine("Window_Leave");
+			if(alreadyFocus) this.Visibility = Visibility.Hidden;
+		}
+		
+		void Window_MouseEnter(object sender, MouseEventArgs e)
+		{
+			System.Diagnostics.Debug.WriteLine("Window_MouseEnter");
+			alreadyFocus = true;
 		}
 	}
 }
