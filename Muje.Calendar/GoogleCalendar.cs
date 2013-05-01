@@ -398,7 +398,8 @@ namespace Muje.Calendar
 					if(e.Start != null && e.Start.DateTime.Length >= 10)
 					{
 						DateTime start = DateTime.Parse(e.Start.DateTime);
-						return true;
+						if(start.Equals(appointment.Start))
+							return true;
 					}
 				}
 			}
