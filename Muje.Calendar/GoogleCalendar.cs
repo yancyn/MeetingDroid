@@ -7,14 +7,17 @@
  * To change this template use Tools | Options | Coding | Edit Standard Headers.
  */
 using System;
-using System.Configuration;
 using System.Collections.Generic;
+using System.Configuration;
+using System.IO;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.IO;
+using System.Web;
 
+using DotNetOpenAuth.Messaging;
 using DotNetOpenAuth.OAuth2;
+
 using Google.Apis.Authentication;
 using Google.Apis.Authentication.OAuth2;
 using Google.Apis.Authentication.OAuth2.DotNetOpenAuth;
@@ -33,6 +36,24 @@ namespace Muje.Calendar
 	public class GoogleCalendar
 	{
 		private CalendarService service;
+		private static OAuth2Authenticator<WebServerClient> _authenticator;
+        private IAuthorizationState _state;
+        /// <summary>
+        /// The last segment in feed url which will use to determine valid id for event.
+        /// </summary>
+        private string feedKey = null;
+        
+		/// <summary>
+        /// Returns the authorization state which was either cached or set for this session.
+        /// </summary>
+        private IAuthorizationState AuthState
+        {
+            get
+            {
+                return _state ?? HttpContext.Current.Session["AUTH_STATE"] as IAuthorizationState;
+            }
+        }
+        
 		public GoogleCalendar()
 		{
 		}
@@ -54,6 +75,56 @@ namespace Muje.Calendar
 				throw ex;
 			}
 		}
+		public void WebLogin()
+		{
+			try
+			{
+				_authenticator = CreateAuthenticator();
+	            service = new CalendarService(new BaseClientService.Initializer(){Authenticator = _authenticator});
+	            
+	            // Check if we received OAuth2 credentials with this request; if yes: parse it.
+	            if (HttpContext.Current != null && HttpContext.Current.Request["code"] != null) _authenticator.LoadAccessToken();
+			}
+			catch(Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine(ex.ToString());
+				throw ex;
+			}
+		}
+		private OAuth2Authenticator<WebServerClient> CreateAuthenticator()
+        {
+            // Register the authenticator.
+            var provider = new WebServerClient(GoogleAuthenticationServer.Description);
+            provider.ClientIdentifier = ClientCredentials.ClientID;
+            provider.ClientSecret = ClientCredentials.ClientSecret;
+            var authenticator = new OAuth2Authenticator<WebServerClient>(provider, GetAuthorization) { NoCaching = true };
+            return authenticator;
+        }
+
+        private IAuthorizationState GetAuthorization(WebServerClient client)
+        {
+            // If this user is already authenticated, then just return the auth state.
+            IAuthorizationState state = AuthState;
+            if (state != null)
+            {
+                return state;
+            }
+
+            // Check if an authorization request already is in progress.
+            state = client.ProcessUserAuthorization(new HttpRequestInfo(HttpContext.Current.Request));
+            if (state != null && (!string.IsNullOrEmpty(state.AccessToken) || !string.IsNullOrEmpty(state.RefreshToken)))
+            {
+                // Store and return the credentials.
+                HttpContext.Current.Session["AUTH_STATE"] = _state = state;
+                return state;
+            }
+
+            // Otherwise do a new authorization request.
+            string scope = CalendarService.Scopes.CalendarReadonly.GetStringValue();
+            OutgoingWebResponse response = client.PrepareRequestUserAuthorization(new[] { scope });
+            response.Send(); // Will throw a ThreadAbortException to prevent sending another response.
+            return null;
+        }
 		/// <summary>
 		/// TODO: Obtain cache session.
 		/// </summary>
@@ -142,13 +213,15 @@ namespace Muje.Calendar
 		/// <seealso cref="">http://code.google.com/p/google-api-dotnet-client/wiki/OAuth2</seealso>
 		/// <seealso cref="">https://developers.google.com/resources/api-libraries/documentation/calendar/v3/csharp/latest/index.html</seealso>
 		/// <seealso cref="">http://googleappsdeveloper.blogspot.com/2011/11/introducing-next-version-of-google.html</seealso>
+		/// <seealso cref="https://developers.google.com/google-apps/calendar/v3/reference/events/get">Events: get</seealso>
         /// <returns></returns>
         public Event Retrieve(string eventId)
         {
+        	//CalendarListEntry cal = service.CalendarList.Get("yancyn@gmail.com").Fetch();
         	return service.Events.Get(ClientCredentials.CalendarId,eventId).Fetch();
         }
         /// <summary>
-        /// TODO: Retrieve event between a period of time.
+        /// Retrieve event between a period of time.
         /// </summary>
         /// <param name="start"></param>
         /// <param name="end"></param>
@@ -188,6 +261,12 @@ namespace Muje.Calendar
         	}
         } */
         
+        /// <summary>
+        /// HACK: Extract from feed instead of real api then only retrieve one by one from Google api.
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <returns></returns>
         public List<Event> Retrieve(DateTime start, DateTime end)
         {
         	
@@ -199,10 +278,19 @@ namespace Muje.Calendar
         	
         	List<Event> result = new List<Event>();
         	
-        	// TODO: If no valid gmail login cache in web browser
-        	string html = string.Empty;
-        	List<string> ids = new List<string>();
-        	HttpWebRequest request = (HttpWebRequest)WebRequest.Create(ConfigurationManager.AppSettings["FeedUrl"].ToString());
+        	try{
+        	
+        	// Use https://www.google.com/calendar/feeds/yancyn@gmail.com/private/full need authorize.
+        	// Use https://www.google.com/calendar/feeds/yancyn%40gmail.com/private-a64035cf96c74f70d3f5c8787a5e500e/basic no need to authorize
+        	string feed = ConfigurationManager.AppSettings["FeedUrl"].ToString();
+        	if(feedKey == null)
+        	{
+        		string[] segments = feed.Split(new char[]{'/'});
+        		if(segments.Length>0) feedKey = segments[segments.Length-1];
+        	}
+        	
+        	List<string> ids = new List<string>();        	
+        	HttpWebRequest request = (HttpWebRequest)WebRequest.Create(feed);
 			using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
 			{
 				using (StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8))
@@ -238,6 +326,12 @@ namespace Muje.Calendar
 					}
 				}
 			}
+        	}
+        	catch (Exception ex)
+        	{
+        		System.Diagnostics.Debug.WriteLine(ex);
+        		throw ex;
+        	}
 			
         	return result;
         }
@@ -256,7 +350,7 @@ namespace Muje.Calendar
 			foreach(string piece in pieces)
 			{
 				if(valid) id = piece;
-				if(piece.Equals("basic")) valid = true;
+				if(piece.Equals(feedKey)) valid = true;
 			}
 			
 			return id;
@@ -283,6 +377,22 @@ namespace Muje.Calendar
 				end = source.IndexOf("</id>");
 				if(start == -1 || end == -1) return;
 			}
+		}
+		
+		public bool Contains(Appointment appointment, List<Event> events)
+		{
+			foreach(Event e in events)
+			{				
+				string subjectOnly = string.Empty;
+				int end = e.Summary.IndexOf("at");
+				if(end > -1) subjectOnly = e.Summary.Substring(0, end).Trim();
+				
+				if(e.Summary.Equals(appointment.Subject)
+				   || subjectOnly.Equals(appointment.Subject))
+					return true;
+			}
+			
+			return false;
 		}
 	}
 }

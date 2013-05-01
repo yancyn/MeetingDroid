@@ -153,5 +153,15 @@ namespace Muje.Calendar.Test
 				if(start == -1 || end == -1) return;
 			}
 		}
+		
+		[Test]
+		public void SubjectTest()
+		{
+			string source = "PHAT Enhancement Kickoff at Level 3 Audio Bridge / Lync for Content Sharing (details below)";			
+			string expected = "PHAT Enhancement Kickoff";
+			int end = source.IndexOf("at");
+			string actual = source.Substring(0,end).Trim();
+			Assert.AreEqual(expected,actual);
+		}
 	}
 }

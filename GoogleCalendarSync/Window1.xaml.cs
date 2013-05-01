@@ -44,44 +44,41 @@ namespace GoogleCalendarSync
 			 * 4. Done.
 			 */
 			
-			GoogleCalendar calendar = new GoogleCalendar();
-			calendar.Login();
 			List<Event> events = new List<Event>();
 			
-			int stopper = 0;
-			/*EWS ews = new EWS();
-			List<Appointment> appointments = ews.GetAppointments(
-				ConfigurationManager.AppSettings["ExchangeEmail"].ToString(),
-				new DateTime(2013,5,3), DateTime.Now.AddDays(30));
+			EWS ews = new EWS();
+			List<Appointment> appointments = ews.GetAppointments(ConfigurationManager.AppSettings["ExchangeEmail"].ToString(), DateTime.Now, DateTime.Now.AddDays(30));
+			
+			GoogleCalendar calendar = new GoogleCalendar();
+			calendar.Login();
+			List<Event> existing = calendar.Retrieve(DateTime.Now, DateTime.Now.AddDays(30));
+			
 			foreach(Appointment appointment in appointments)
 			{
-				if(stopper >= 10) break;
-				PrintAppointment(appointment);
-				//calendar.Insert(appointment);
-				
-				Event i = new Event();
-				i.Id = appointment.Id.ToString();
-				i.Summary = appointment.Subject;
-				i.Location = appointment.Location;
-				
-				EventDateTime start = new EventDateTime();
-				start.DateTime = appointment.Start.ToString("yyyy-MM-ddTHH:mmzzz");//ToUniversalTime().ToString()
-				start.TimeZone = appointment.Start.ToString("zzz");
-				i.Start = start;
-				
-				EventDateTime end = new EventDateTime();
-				end.DateTime = appointment.End.ToString("yyyy-MM-ddTHH:mmzzz");
-				end.TimeZone = appointment.End.ToString("zzz");
-				i.End = end;
-				events.Add(i);
-				
-				break;				
-				stopper ++;
-			}*/
+				if(!calendar.Contains(appointment, existing))
+				{
+					calendar.Insert(appointment);
+					
+					Event i = new Event();
+					i.Id = appointment.Id.ToString();
+					i.Summary = appointment.Subject;
+					i.Location = appointment.Location;
+					
+					EventDateTime start = new EventDateTime();
+					start.DateTime = appointment.Start.ToString("yyyy-MM-ddTHH:mmzzz");//ToUniversalTime().ToString()
+					start.TimeZone = appointment.Start.ToString("zzz");
+					i.Start = start;
+					
+					EventDateTime end = new EventDateTime();
+					end.DateTime = appointment.End.ToString("yyyy-MM-ddTHH:mmzzz");
+					end.TimeZone = appointment.End.ToString("zzz");
+					i.End = end;
+					events.Add(i);
+				}
+			}
 			
-			// TODO: set newly added event into notification area
+			// set newly added event into notification area
 			//GoogleCalendar calendar = new GoogleCalendar();
-			events = calendar.Retrieve(DateTime.Now, DateTime.Now.AddDays(30));
 //			Event movie = calendar.Retrieve("s5ibdoum1jk6omru23dg1is8pc");
 //			events.Add(movie);			
 //			Event ev = calendar.Retrieve("_cdnmst35dpq3k_cdnmqbj1dpi74rr9cgn66obccln68obi5tincpbeehpiue1j68qg");
