@@ -37,6 +37,8 @@ namespace GoogleCalendarSync
 		
 		void window1_Initialized(object sender, EventArgs e)
 		{
+			System.Diagnostics.Debug.WriteLine("window1_Inititialized");
+			
 			/**
 			 * 1. Retrieve 30 days appointments from Outlook. Starting from DateTime.Now. Ignore pass appointment.
 			 * 2. Verify whether any updates or new in primary Google Calendar if so just update or insert.
@@ -77,13 +79,7 @@ namespace GoogleCalendarSync
 				}
 			}
 			
-			// set newly added event into notification area
-			//GoogleCalendar calendar = new GoogleCalendar();
-//			Event movie = calendar.Retrieve("s5ibdoum1jk6omru23dg1is8pc");
-//			events.Add(movie);			
-//			Event ev = calendar.Retrieve("_cdnmst35dpq3k_cdnmqbj1dpi74rr9cgn66obccln68obi5tincpbeehpiue1j68qg");
-//			events.Add(ev);
-			
+			// set newly added event into notification area			
 			EventLists.ItemsSource = events;
 		}
 		private void PrintAppointment(Appointment appointment)
@@ -100,6 +96,20 @@ namespace GoogleCalendarSync
 			for(int i=0;i<appointment.OptionalAttendees.Count;i++)
 				output += appointment.OptionalAttendees[i].Name + ";";
 			System.Diagnostics.Debug.WriteLine(output);
+		}
+		private double GetTaskbarHeight()
+		{
+			return System.Windows.SystemParameters.PrimaryScreenHeight - System.Windows.SystemParameters.WorkArea.Height;
+		}
+		void window1_Loaded(object sender, RoutedEventArgs e)
+		{
+			System.Diagnostics.Debug.WriteLine("window1_Loaded");
+			
+			System.Diagnostics.Debug.WriteLine("Screen width: "+System.Windows.SystemParameters.PrimaryScreenWidth);
+			System.Diagnostics.Debug.WriteLine("Screen height: "+System.Windows.SystemParameters.PrimaryScreenHeight);
+			System.Diagnostics.Debug.WriteLine("Client: "+this.RenderSize);
+			this.Left = System.Windows.SystemParameters.PrimaryScreenWidth - this.RenderSize.Width;
+			this.Top = System.Windows.SystemParameters.PrimaryScreenHeight - this.RenderSize.Height - GetTaskbarHeight();
 		}
 	}
 }
