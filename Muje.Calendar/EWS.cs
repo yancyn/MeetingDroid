@@ -90,7 +90,7 @@ namespace Muje.Calendar
             FolderId calendarFolder = new FolderId(WellKnownFolderName.Calendar,mailbox);
             
             System.Diagnostics.Debug.WriteLine("start retrieve calendar item");
-            FindItemsResults<Appointment> result = service.FindAppointments(calendarFolder,calendarView);            
+            FindItemsResults<Appointment> result = service.FindAppointments(calendarFolder,calendarView);
             foreach(Appointment appointment in result)
             {
             	output.Add(appointment);

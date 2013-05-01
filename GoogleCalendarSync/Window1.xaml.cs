@@ -25,7 +25,7 @@ using Muje.Calendar;
 namespace GoogleCalendarSync
 {
 	/// <summary>
-	/// Interaction logic for Window1.xaml
+	/// TODO: Make it a notification in taskbar.
 	/// </summary>
 	public partial class Window1 : Window
 	{
@@ -57,21 +57,21 @@ namespace GoogleCalendarSync
 				if(stopper >= 10) break;
 				PrintAppointment(appointment);
 				calendar.Insert(appointment);
-				
-				Event i = new Event();
-				//i.Id = appointment.Id.ToString();
-				i.Summary = appointment.Subject;
-				i.Location = appointment.Location;
-				
-				EventDateTime start = new EventDateTime();
-				start.DateTime = appointment.Start.ToUniversalTime().ToString();//ToString("yyyy-MM-ddTHH:mmzzz");
-				start.TimeZone = appointment.Start.ToString("zzz");
-				i.Start = start;
-				
-				EventDateTime end = new EventDateTime();
-				end.DateTime = appointment.End.ToUniversalTime().ToString();//.ToString("yyyy-MM-ddTHH:mmzzz");
-				end.TimeZone = appointment.End.ToString("zzz");
-				i.End = end;
+//				
+//				Event i = new Event();
+//				//i.Id = appointment.Id.ToString();
+//				i.Summary = appointment.Subject;
+//				i.Location = appointment.Location;
+//				
+//				EventDateTime start = new EventDateTime();
+//				start.DateTime = appointment.Start.ToUniversalTime().ToString();//ToString("yyyy-MM-ddTHH:mmzzz");
+//				start.TimeZone = appointment.Start.ToString("zzz");
+//				i.Start = start;
+//				
+//				EventDateTime end = new EventDateTime();
+//				end.DateTime = appointment.End.ToUniversalTime().ToString();//.ToString("yyyy-MM-ddTHH:mmzzz");
+//				end.TimeZone = appointment.End.ToString("zzz");
+//				i.End = end;
 				events.Add(i);
 				break;
 				
@@ -80,7 +80,7 @@ namespace GoogleCalendarSync
 			
 			// TODO: set newly added event into notification area
 			//GoogleCalendar calendar = new GoogleCalendar();
-			//List<Event> events = calendar.Retrieve(DateTime.Now, DateTime.Now.AddDays(30));
+			events = calendar.Retrieve(DateTime.Now, DateTime.Now.AddDays(30));
 			EventLists.ItemsSource = events;
 		}
 		private void PrintAppointment(Appointment appointment)
@@ -89,8 +89,8 @@ namespace GoogleCalendarSync
 			output += appointment.Id.ToString() + "\t";//ChangeKey //UniqueId
 			output += appointment.Subject;
 			output += "["+appointment.Location+"]";
-			output += "("+appointment.Start.ToString("yyyy-MM-ddTHH:mmzzz")+")";
-			//output += " ("+appointment.Start.ToString("yyyy-MM-dd HH:mm") + " - "+appointment.End.ToString("HH:mm") + ") ";
+			//output += "("+appointment.Start.ToString("yyyy-MM-ddTHH:mmzzz")+")";
+			output += " ("+appointment.Start.ToString("yyyy-MM-dd HH:mm") + " - "+appointment.End.ToString("HH:mm") + ") ";
 			output += appointment.Organizer.Name + ";";
 			for(int i=0;i<appointment.RequiredAttendees.Count;i++)
 				output += appointment.RequiredAttendees[i].Name + ";";

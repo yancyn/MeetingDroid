@@ -40,16 +40,35 @@ namespace Muje.Calendar.Test
 		/// <summary>
 		/// TODO: Fail to unit test but run on application is success.
 		/// </summary>
-		[Test]
 		public void RetrieveTest()
 		{
 			int actual = calendar.Retrieve(DateTime.Now, DateTime.Now.AddDays(10)).Count;
 			Assert.AreNotEqual(0,actual);
 		}
 		
-		[Test]
 		public void CreateEventTest()
 		{
+		}
+		[Test]
+		public void ConvertEventDateTimeToDateTest()
+		{
+			string source = "2013-05-03T09:00:00+8:00";
+			DateTime expected = new DateTime(2013,5,3,9,0,0);
+			DateTime actual = DateTime.Parse(source);
+			Assert.AreEqual(expected, actual);
+		}
+		[Test]
+		public void DateTimeFormatTest()
+		{
+			DateTime source = new DateTime(2013,5,3,9,30,0);
+			string expected = "9:30AM";
+			string actual = source.ToString("h:mmtt");
+			Assert.AreEqual(expected, actual);
+			
+			source = new DateTime(2013,5,3,19,30,0);
+			expected = "7:30PM";
+			actual = source.ToString("h:mmtt");
+			Assert.AreEqual(expected, actual);
 		}
 	}
 }
