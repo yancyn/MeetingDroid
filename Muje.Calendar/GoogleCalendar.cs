@@ -7,9 +7,13 @@
  * To change this template use Tools | Options | Coding | Edit Standard Headers.
  */
 using System;
+using System.Configuration;
 using System.Collections.Generic;
+using System.Net;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.IO;
 
-using Microsoft.Exchange.WebServices.Data;
 using DotNetOpenAuth.OAuth2;
 using Google.Apis.Authentication;
 using Google.Apis.Authentication.OAuth2;
@@ -19,6 +23,7 @@ using Google.Apis.Calendar.v3.Data;
 using Google.Apis.Samples.Helper;
 using Google.Apis.Services;
 using Google.Apis.Util;
+using Microsoft.Exchange.WebServices.Data;
 
 namespace Muje.Calendar
 {
@@ -30,9 +35,8 @@ namespace Muje.Calendar
 		private CalendarService service;
 		public GoogleCalendar()
 		{
-			Login();
 		}
-		private void Login()
+		public void Login()
 		{
 			try
 			{
@@ -89,6 +93,7 @@ namespace Muje.Calendar
         /// <remarks>
         /// Currently using quick add method where direct insert seems like not success at all.
         /// </remarks>
+        /// <seealso cref="http://support.google.com/calendar/answer/36604">Quick Add</seealso>
         /// <seealso cref="https://groups.google.com/forum/#!searchin/google-api-dotnet-client/event/google-api-dotnet-client/zal0b3322iM/p3Eu9sYjUVwJ">Unable to insert events (400 error), but QuickAdd okay</seealso>
         /// <param name="e"></param>
         public void Insert(Appointment appointment) //Event e)
@@ -114,9 +119,10 @@ namespace Muje.Calendar
         		TODO: service.Events.Insert(e,ClientCredentials.CalendarId).Fetch();
         		*/
         		
+        		// 2013-05-03 9:00AM-10:00AM PHAT Meeting with Ryan at Lync
         		string quickText = string.Empty;
         		quickText += appointment.Start.ToString("yyyy-MM-dd h:mmtt");
-        		quickText += "-" + appointment.End.ToString("yyyy-MM-dd h:mmtt");//("hh:mm tt");
+        		quickText += "-" + appointment.End.ToString("h:mmtt");
         		quickText += " " + appointment.Subject;
         		quickText += " at " + appointment.Location;
         		System.Diagnostics.Debug.WriteLine(quickText);
@@ -148,7 +154,7 @@ namespace Muje.Calendar
         /// <param name="end"></param>
         /// <seealso cref="">http://stackoverflow.com/questions/8537681/google-api-v3-for-dotnet-using-the-calendar-with-an-api-key</seealso>
         /// <returns></returns>
-        public List<Event> Retrieve(DateTime start, DateTime end)
+        /*public List<Event> Retrieve(DateTime start, DateTime end)
         {
         	try
         	{
@@ -180,6 +186,103 @@ namespace Muje.Calendar
         		System.Diagnostics.Debug.WriteLine(ex.ToString());
         		throw ex;
         	}
+        } */
+        
+        public List<Event> Retrieve(DateTime start, DateTime end)
+        {
+        	
+        	/**
+        	 * 1. Retrieve calendar atom.
+        	 * 2. Extract id value.
+        	 * 3. service.Events.Get(ClientCredentials.CalendarId,id).Fetch();
+        	 */
+        	
+        	List<Event> result = new List<Event>();
+        	
+        	// TODO: If no valid gmail login cache in web browser
+        	string html = string.Empty;
+        	List<string> ids = new List<string>();
+        	HttpWebRequest request = (HttpWebRequest)WebRequest.Create(ConfigurationManager.AppSettings["FeedUrl"].ToString());
+			using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+			{
+				using (StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8))
+				{
+					//grab order require to validate only
+					string line = string.Empty;
+					while ((line = reader.ReadLine()) != null)
+					{
+						//System.Diagnostics.Debug.WriteLine(line);
+						//html += line;
+						List<string> extracts;
+						ExtractId(line, out extracts);
+						foreach(string id in extracts)
+							ids.Add(id);
+					}
+				}
+			}
+        	
+			// Retrieve one by one from Google Calendar
+			foreach(string id in ids)
+			{
+				//System.Diagnostics.Debug.WriteLine("Fetching "+id);
+        		Event e = service.Events.Get(ClientCredentials.CalendarId,id).Fetch();
+        		if(e.Start != null && e.End != null
+					   && e.Start.DateTime != null && e.End.DateTime != null
+					   && e.Start.DateTime.Length >= 10 && e.End.DateTime.Length >= 10) // 25
+				{
+					DateTime eventStart = DateTime.Parse(e.Start.DateTime);
+					DateTime eventEnd = DateTime.Parse(e.End.DateTime);
+					if(eventStart >= start && eventEnd <= end)
+					{
+						result.Add(e);
+					}
+				}
+			}
+			
+        	return result;
         }
+        private string ExtractId(string source)
+		{
+			string id = null;
+			
+			int start = source.IndexOf("<id>");
+			int end = source.IndexOf("</id>");
+			if(start == -1 || end == -1) return id;
+			
+			// The id after /basic/ url
+			bool valid = false;
+			string url = source.Substring(start+4, end-start-5+1);
+			string[] pieces = url.Split(new char[]{'/'});
+			foreach(string piece in pieces)
+			{
+				if(valid) id = piece;
+				if(piece.Equals("basic")) valid = true;
+			}
+			
+			return id;
+		}
+		private void ExtractId(string source, out List<string> result)
+		{
+			result = new List<string>();
+			
+			string id = null;			
+			int start = source.IndexOf("<id>");
+			int end = source.IndexOf("</id>");
+			if(start == -1 || end == -1) return;
+			
+			id = ExtractId(source);
+			if(id != null) result.Add(id);
+			
+			while(source.Length-end-4-1 >0)
+			{
+				source = source.Substring(end+4+1, source.Length-end-4-1);
+				id = ExtractId(source);
+				if(id != null) result.Add(id);
+				
+				start = source.IndexOf("<id>");
+				end = source.IndexOf("</id>");
+				if(start == -1 || end == -1) return;
+			}
+		}
 	}
 }

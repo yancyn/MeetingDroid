@@ -45,10 +45,11 @@ namespace GoogleCalendarSync
 			 */
 			
 			GoogleCalendar calendar = new GoogleCalendar();
+			calendar.Login();
 			List<Event> events = new List<Event>();
 			
 			int stopper = 0;
-			EWS ews = new EWS();
+			/*EWS ews = new EWS();
 			List<Appointment> appointments = ews.GetAppointments(
 				ConfigurationManager.AppSettings["ExchangeEmail"].ToString(),
 				new DateTime(2013,5,3), DateTime.Now.AddDays(30));
@@ -56,7 +57,7 @@ namespace GoogleCalendarSync
 			{
 				if(stopper >= 10) break;
 				PrintAppointment(appointment);
-				calendar.Insert(appointment);
+				//calendar.Insert(appointment);
 				
 				Event i = new Event();
 				i.Id = appointment.Id.ToString();
@@ -76,16 +77,16 @@ namespace GoogleCalendarSync
 				
 				break;				
 				stopper ++;
-			}
+			}*/
 			
 			// TODO: set newly added event into notification area
 			//GoogleCalendar calendar = new GoogleCalendar();
-			//events = calendar.Retrieve(DateTime.Now, DateTime.Now.AddDays(30));
-			Event movie = calendar.Retrieve("s5ibdoum1jk6omru23dg1is8pc");
-			events.Add(movie);
+			events = calendar.Retrieve(DateTime.Now, DateTime.Now.AddDays(30));
+//			Event movie = calendar.Retrieve("s5ibdoum1jk6omru23dg1is8pc");
+//			events.Add(movie);			
+//			Event ev = calendar.Retrieve("_cdnmst35dpq3k_cdnmqbj1dpi74rr9cgn66obccln68obi5tincpbeehpiue1j68qg");
+//			events.Add(ev);
 			
-			Event ev = calendar.Retrieve("_cdnmst35dpq3k_cdnmqbj1dpi74rr9cgn66obccln68obi5tincpbeehpiue1j68qg");
-			events.Add(ev);
 			EventLists.ItemsSource = events;
 		}
 		private void PrintAppointment(Appointment appointment)

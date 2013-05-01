@@ -17,7 +17,7 @@
 					</LinearGradientBrush>
 				</Border.Background>
 				
-				<WrapPanel Orientation="Vertical">
+				<WrapPanel Orientation="Vertical" MaxWidth="320">
 					<TextBlock FontWeight="Bold" Text="{Binding Summary}" />
 					<WrapPanel>
 						<TextBlock Text="{Binding Start.DateTime}" />
