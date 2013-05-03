@@ -21,6 +21,22 @@ namespace Muje.Calendar.Test
     	private static string domain = ConfigurationManager.AppSettings["Domain"].ToString();
     	private EWS target;
     	
+    	private void PrintAppointment(Appointment appointment)
+		{			
+			string output = string.Empty;
+			output += appointment.Id.ToString() + "\t";//ChangeKey //UniqueId
+			output += appointment.Subject;
+			output += "["+appointment.Location+"]";
+			//output += "("+appointment.Start.ToString("yyyy-MM-ddTHH:mmzzz")+")";
+			output += " ("+appointment.Start.ToString("yyyy-MM-dd HH:mm") + " - "+appointment.End.ToString("HH:mm") + ") ";
+			output += appointment.Organizer.Name + ";";
+			for(int i=0;i<appointment.RequiredAttendees.Count;i++)
+				output += appointment.RequiredAttendees[i].Name + ";";
+			for(int i=0;i<appointment.OptionalAttendees.Count;i++)
+				output += appointment.OptionalAttendees[i].Name + ";";
+			System.Diagnostics.Debug.WriteLine(output);
+		}
+    	
     	[SetUp]
     	public void Initialize()
     	{
@@ -83,6 +99,21 @@ namespace Muje.Calendar.Test
         {
         	// Expected today has meeting at least
             Assert.AreNotEqual(0, target.GetAppointments(DateTime.Now).Count);
+        }
+        [Test]
+        public void GetPHATMeetingTest()
+        {
+        	List<Appointment> source = target.GetAppointments(email, new DateTime(2013,5,9), new DateTime(2013,5,10));
+        	bool expected = true;
+        	bool actual = false;
+        	foreach(Appointment appointment in source)
+        	{
+        		PrintAppointment(appointment);
+        		if(appointment.Subject.Contains("PHAT"))
+        			actual = true;
+        	}
+        	
+        	Assert.AreEqual(expected, actual);
         }
         [Test]
         public void GetAppointmentsAtAustraliaRoomTest()
@@ -241,6 +272,9 @@ namespace Muje.Calendar.Test
             Assert.AreNotEqual(0, actual);
         }
 
+        /// <summary>
+        /// A test Find item in calendar.
+        /// </summary>
         public void FindItemTest()
         {
             ExchangeService service = CreateService(email,password,domain);

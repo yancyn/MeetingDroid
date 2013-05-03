@@ -191,6 +191,7 @@ namespace Muje.Calendar
         		*/
         		
         		// 2013-05-03 9:00AM-10:00AM PHAT Meeting with Ryan at Lync
+        		// TODO: Add attendee
         		string quickText = string.Empty;
         		quickText += appointment.Start.ToString("yyyy-MM-dd h:mmtt");
         		quickText += "-" + appointment.End.ToString("h:mmtt");

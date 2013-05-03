@@ -30,6 +30,10 @@ namespace GoogleCalendarSync
 	public partial class Window1 : Window
 	{
 		private bool alreadyFocus = false;
+		/// <summary>
+		/// How long days to retrieve for calendar.
+		/// </summary>
+		const int PERIOD_DAYS = 30;
 		public Window1()
 		{
 			InitializeComponent();
@@ -103,11 +107,11 @@ namespace GoogleCalendarSync
 			List<Event> events = new List<Event>();
 
 			EWS ews = new EWS();
-			List<Appointment> appointments = ews.GetAppointments(ConfigurationManager.AppSettings["ExchangeEmail"].ToString(), DateTime.Now, DateTime.Now.AddDays(30));
+			List<Appointment> appointments = ews.GetAppointments(ConfigurationManager.AppSettings["ExchangeEmail"].ToString(), DateTime.Now, DateTime.Now.AddDays(PERIOD_DAYS));
 			
 			GoogleCalendar calendar = new GoogleCalendar();
 			calendar.Login();
-			List<Event> existing = calendar.Retrieve(DateTime.Now, DateTime.Now.AddDays(30));
+			List<Event> existing = calendar.Retrieve(DateTime.Now, DateTime.Now.AddDays(PERIOD_DAYS));
 			
 			foreach(Appointment appointment in appointments)
 			{
