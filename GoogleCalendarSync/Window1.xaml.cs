@@ -154,6 +154,13 @@ namespace GoogleCalendarSync
 				}
 			}
 
+			// If no new appointment simply add a false appointment to notify as well.
+			if(events.Count == 0)
+			{
+				Event i = new Event();
+				i.Summary = "No new appointment found!";
+				events.Add(i);
+			}
 			EventLists.ItemsSource = events;
 		}
 		private void Notify()
