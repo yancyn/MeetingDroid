@@ -8,6 +8,7 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -31,6 +32,17 @@ namespace GoogleCalendarSync
 		void Image_MouseDown(object sender, MouseButtonEventArgs e)
 		{
 			System.Diagnostics.Debug.WriteLine("open browser for help");
+			Process.Start("https://code.google.com/apis/console");
+		}
+		
+		/// <summary>
+		/// TODO: Save into config file.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+		{
+			System.Diagnostics.Debug.WriteLine("saving into config file...");
 		}
 	}
 }
