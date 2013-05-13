@@ -11,6 +11,7 @@ using System.Configuration;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -25,7 +26,7 @@ using Muje.Calendar;
 namespace GoogleCalendarSync
 {
 	/// <summary>
-	/// TODO: Make it a notification in taskbar.
+	/// Make it a notification in taskbar.
 	/// </summary>
 	public partial class Window1 : Window
 	{
@@ -41,10 +42,16 @@ namespace GoogleCalendarSync
 			// TODO: http://www.hardcodet.net/projects/wpf-notifyicon
 			// Create NotifyIcon at system tray
 			System.Windows.Forms.NotifyIcon ni = new System.Windows.Forms.NotifyIcon();
-			ni.Icon = new System.Drawing.Icon("cal.ico");
+			
+			System.Windows.Forms.NotifyIcon icon = new System.Windows.Forms.NotifyIcon();
+			Stream stream = Application.GetResourceStream(new Uri("pack://application:,,,/cal.ico", UriKind.Absolute)).Stream; // MUST set icon build as resource
+			ni.Icon = new System.Drawing.Icon(stream);
 			ni.Visible = true;
 			ni.ContextMenuStrip = InitialMenu();
 			ni.DoubleClick += delegate(object sender, EventArgs e) { Notify();};
+			
+			stream.Flush();
+			stream.Close();
 		}
 		private System.Windows.Forms.ContextMenuStrip InitialMenu()
 		{
@@ -161,6 +168,14 @@ namespace GoogleCalendarSync
 				output += appointment.OptionalAttendees[i].Name + ";";
 			System.Diagnostics.Debug.WriteLine(output);
 		}
+		/// <summary>
+		/// Return the height of taskbar when it is at bottom screen.
+		/// </summary>
+		/// <remarks>
+		/// TODO: Handle other scenario when taskbar dock at different position
+		/// like on top, left and right.
+		/// </remarks>
+		/// <returns></returns>
 		private double GetTaskbarHeight()
 		{
 			return System.Windows.SystemParameters.PrimaryScreenHeight - System.Windows.SystemParameters.WorkArea.Height;

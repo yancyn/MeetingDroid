@@ -45,6 +45,7 @@ namespace Muje.Calendar.Test
 		[Test]
 		public void RetrieveTest()
 		{
+			calendar.Login();
 			int actual = calendar.Retrieve(DateTime.Now, DateTime.Now.AddDays(10)).Count;
 			Assert.AreNotEqual(0,actual);
 		}

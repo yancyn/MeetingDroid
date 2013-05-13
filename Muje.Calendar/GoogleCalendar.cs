@@ -218,7 +218,7 @@ namespace Muje.Calendar
         /// <returns></returns>
         public Event Retrieve(string eventId)
         {
-        	//CalendarListEntry cal = service.CalendarList.Get("yancyn@gmail.com").Fetch();
+        	//CalendarListEntry cal = service.CalendarList.Get("").Fetch();
         	return service.Events.Get(ClientCredentials.CalendarId,eventId).Fetch();
         }
         /// <summary>
@@ -279,54 +279,55 @@ namespace Muje.Calendar
         	
         	List<Event> result = new List<Event>();
         	
-        	try{
-        	
-        	// Use https://www.google.com/calendar/feeds/yancyn@gmail.com/private/full need authorize.
-        	// Use https://www.google.com/calendar/feeds/yancyn%40gmail.com/private-a64035cf96c74f70d3f5c8787a5e500e/basic no need to authorize
-        	string feed = ConfigurationManager.AppSettings["FeedUrl"].ToString();
-        	if(feedKey == null)
+        	try
         	{
-        		string[] segments = feed.Split(new char[]{'/'});
-        		if(segments.Length>0) feedKey = segments[segments.Length-1];
-        	}
         	
-        	List<string> ids = new List<string>();        	
-        	HttpWebRequest request = (HttpWebRequest)WebRequest.Create(feed);
-			using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-			{
-				using (StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8))
+	        	// TODO: Use https://www.google.com/calendar/feeds/yancyn@gmail.com/private/full need authorize.
+	        	// Use https://www.google.com/calendar/feeds/yancyn%40gmail.com/private-a64035cf96c74f70d3f5c8787a5e500e/basic no need to authorize
+	        	string feed = ConfigurationManager.AppSettings["FeedUrl"].ToString();
+	        	if(feedKey == null)
+	        	{
+	        		string[] segments = feed.Split(new char[]{'/'});
+	        		if(segments.Length>0) feedKey = segments[segments.Length-1];
+	        	}
+	        	
+	        	List<string> ids = new List<string>();        	
+	        	HttpWebRequest request = (HttpWebRequest)WebRequest.Create(feed);
+				using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
 				{
-					//grab order require to validate only
-					string line = string.Empty;
-					while ((line = reader.ReadLine()) != null)
+					using (StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8))
 					{
-						//System.Diagnostics.Debug.WriteLine(line);
-						//html += line;
-						List<string> extracts;
-						ExtractId(line, out extracts);
-						foreach(string id in extracts)
-							ids.Add(id);
+						//grab order require to validate only
+						string line = string.Empty;
+						while ((line = reader.ReadLine()) != null)
+						{
+							//System.Diagnostics.Debug.WriteLine(line);
+							//html += line;
+							List<string> extracts;
+							ExtractId(line, out extracts);
+							foreach(string id in extracts)
+								ids.Add(id);
+						}
 					}
 				}
-			}
-        	
-			// Retrieve one by one from Google Calendar
-			foreach(string id in ids)
-			{
-				//System.Diagnostics.Debug.WriteLine("Fetching "+id);
-        		Event e = service.Events.Get(ClientCredentials.CalendarId,id).Fetch();
-        		if(e.Start != null && e.End != null
-					   && e.Start.DateTime != null && e.End.DateTime != null
-					   && e.Start.DateTime.Length >= 10 && e.End.DateTime.Length >= 10) // 25
+	        	
+				// Retrieve one by one from Google Calendar
+				foreach(string id in ids)
 				{
-					DateTime eventStart = DateTime.Parse(e.Start.DateTime);
-					DateTime eventEnd = DateTime.Parse(e.End.DateTime);
-					if(eventStart >= start && eventEnd <= end)
+					//System.Diagnostics.Debug.WriteLine("Fetching "+id);
+	        		Event e = service.Events.Get(ClientCredentials.CalendarId,id).Fetch();
+	        		if(e.Start != null && e.End != null
+						   && e.Start.DateTime != null && e.End.DateTime != null
+						   && e.Start.DateTime.Length >= 10 && e.End.DateTime.Length >= 10) // 25
 					{
-						result.Add(e);
+						DateTime eventStart = DateTime.Parse(e.Start.DateTime);
+						DateTime eventEnd = DateTime.Parse(e.End.DateTime);
+						if(eventStart >= start && eventEnd <= end)
+						{
+							result.Add(e);
+						}
 					}
 				}
-			}
         	}
         	catch (Exception ex)
         	{
