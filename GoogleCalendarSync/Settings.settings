@@ -10,9 +10,6 @@
     <Setting Name="CalendarId" Type="System.String" Scope="User" Roaming="false">
       <Value />
     </Setting>
-    <Setting Name="CalendarProvide" Type="System.String" Scope="User" Roaming="false">
-      <Value />
-    </Setting>
     <Setting Name="ClientID" Type="System.String" Scope="User" Roaming="false">
       <Value />
     </Setting>
@@ -30,6 +27,9 @@
     </Setting>
     <Setting Name="FeedUrl" Type="System.String" Scope="User" Roaming="false">
       <Value />
+    </Setting>
+    <Setting Name="PeriodDays" Type="System.Int32" Scope="User" Roaming="false">
+      <Value Profile="(Default)">30</Value>
     </Setting>
   </Settings>
 </SettingsFile>

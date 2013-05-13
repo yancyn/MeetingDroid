@@ -47,17 +47,6 @@ namespace GoogleCalendarSync {
 		
 		[global::System.Configuration.UserScopedSettingAttribute()]
 		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-		public string CalendarProvide {
-			get {
-				return ((string)(this["CalendarProvide"]));
-			}
-			set {
-				this["CalendarProvide"] = value;
-			}
-		}
-		
-		[global::System.Configuration.UserScopedSettingAttribute()]
-		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
 		public string ClientID {
 			get {
 				return ((string)(this["ClientID"]));
@@ -113,12 +102,25 @@ namespace GoogleCalendarSync {
 		
 		[global::System.Configuration.UserScopedSettingAttribute()]
 		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+			"d3f5c8787a5e500e/full")]
 		public string FeedUrl {
 			get {
 				return ((string)(this["FeedUrl"]));
 			}
 			set {
 				this["FeedUrl"] = value;
+			}
+		}
+		
+		[global::System.Configuration.UserScopedSettingAttribute()]
+		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+		[global::System.Configuration.DefaultSettingValueAttribute("30")]
+		public int PeriodDays {
+			get {
+				return ((int)(this["PeriodDays"]));
+			}
+			set {
+				this["PeriodDays"] = value;
 			}
 		}
 	}

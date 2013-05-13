@@ -31,10 +31,7 @@ namespace GoogleCalendarSync
 	public partial class Window1 : Window
 	{
 		private bool alreadyFocus = false;
-		/// <summary>
-		/// How long days to retrieve for calendar.
-		/// </summary>
-		const int PERIOD_DAYS = 30;
+		
 		public Window1()
 		{
 			InitializeComponent();
@@ -117,7 +114,9 @@ namespace GoogleCalendarSync
 				Email=Settings.Default.ExchangeEmail,
 				Password=Settings.Default.ExchangePassword,
 				Domain=Settings.Default.Domain};
-			List<Appointment> appointments = ews.GetAppointments(Settings.Default.ExchangeEmail, DateTime.Now, DateTime.Now.AddDays(PERIOD_DAYS));
+			List<Appointment> appointments = ews.GetAppointments(
+				Settings.Default.ExchangeEmail,
+				DateTime.Now, DateTime.Now.AddDays(Settings.Default.PeriodDays));
 			
 			// setup credentials
 			Muje.Calendar.ClientCredentials.ApiKey = Settings.Default.Api;
@@ -128,7 +127,7 @@ namespace GoogleCalendarSync
 			GoogleCalendar calendar = new GoogleCalendar();
 			calendar.FeedUrl = Settings.Default.FeedUrl;
 			calendar.Login();
-			List<Event> existing = calendar.Retrieve(DateTime.Now, DateTime.Now.AddDays(PERIOD_DAYS));
+			List<Event> existing = calendar.Retrieve(DateTime.Now, DateTime.Now.AddDays(Settings.Default.PeriodDays));
 			
 			foreach(Appointment appointment in appointments)
 			{
