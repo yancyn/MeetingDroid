@@ -65,7 +65,7 @@ namespace GoogleCalendarSync
 			// TODO: Add setting form
 			System.Windows.Forms.ToolStripMenuItem m1 = new System.Windows.Forms.ToolStripMenuItem();
 			m1.Text = "Setting";
-			m1.Click += delegate(object sender, EventArgs e) {  };
+			m1.Click += delegate(object sender, EventArgs e) { new ConfigForm().Show(); };
 			menu.Items.Add(m1);
 			
 			System.Windows.Forms.ToolStripMenuItem m2 = new System.Windows.Forms.ToolStripMenuItem();

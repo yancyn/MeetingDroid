@@ -1,4 +1,4 @@
-﻿<Window
+<Window
 	x:Class="GoogleCalendarSync.ConfigForm" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	WindowStyle="ToolWindow"
 	WindowStartupLocation="CenterScreen"
@@ -27,7 +27,13 @@
 			</Grid>
 		</GroupBox>
 	
-		<GroupBox Header="Google Calendar API">
+		<GroupBox>
+			<GroupBox.Header>
+				<WrapPanel>
+					<TextBlock Text="Google Calendar API" />
+					<Image Source="help.png" ToolTip="How to" MouseDown="Image_MouseDown" Margin="4" />
+				</WrapPanel>
+			</GroupBox.Header>
 			<Grid>
 				<Grid.RowDefinitions>
 					<RowDefinition Height="Auto" />

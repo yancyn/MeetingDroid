@@ -27,5 +27,10 @@ namespace GoogleCalendarSync
 		{
 			InitializeComponent();
 		}
+		
+		void Image_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			System.Diagnostics.Debug.WriteLine("open browser for help");
+		}
 	}
 }

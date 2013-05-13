@@ -119,7 +119,7 @@
     <None Include="app.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="help.png" />
+    <Resource Include="help.png" />
     <Resource Include="cal.ico">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
