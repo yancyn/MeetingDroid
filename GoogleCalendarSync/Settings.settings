@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<SettingsFile CurrentProfile="(Default)" GeneratedClassNamespace="GoogleCalendarSync" GeneratedClassName="Settings" xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings">
+  <Profiles>
+    <Profile Name="(Default)" />
+  </Profiles>
+  <Settings>
+    <Setting Name="Api" Type="System.String" Scope="User" Roaming="false">
+      <Value />
+    </Setting>
+    <Setting Name="CalendarId" Type="System.String" Scope="User" Roaming="false">
+      <Value />
+    </Setting>
+    <Setting Name="CalendarProvide" Type="System.String" Scope="User" Roaming="false">
+      <Value />
+    </Setting>
+    <Setting Name="ClientID" Type="System.String" Scope="User" Roaming="false">
+      <Value />
+    </Setting>
+    <Setting Name="ClientSecret" Type="System.String" Scope="User" Roaming="false">
+      <Value />
+    </Setting>
+    <Setting Name="Domain" Type="System.String" Scope="User" Roaming="false">
+      <Value />
+    </Setting>
+    <Setting Name="ExchangeEmail" Type="System.String" Scope="User" Roaming="false">
+      <Value />
+    </Setting>
+    <Setting Name="ExchangePassword" Type="System.String" Scope="User" Roaming="false">
+      <Value />
+    </Setting>
+    <Setting Name="FeedUrl" Type="System.String" Scope="User" Roaming="false">
+      <Value />
+    </Setting>
+  </Settings>
+</SettingsFile>

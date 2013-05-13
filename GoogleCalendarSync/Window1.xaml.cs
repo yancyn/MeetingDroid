@@ -113,10 +113,20 @@ namespace GoogleCalendarSync
 			 */
 			List<Event> events = new List<Event>();
 
-			EWS ews = new EWS();
-			List<Appointment> appointments = ews.GetAppointments(ConfigurationManager.AppSettings["ExchangeEmail"].ToString(), DateTime.Now, DateTime.Now.AddDays(PERIOD_DAYS));
+			EWS ews = new EWS{
+				Email=Settings.Default.ExchangeEmail,
+				Password=Settings.Default.ExchangePassword,
+				Domain=Settings.Default.Domain};
+			List<Appointment> appointments = ews.GetAppointments(Settings.Default.ExchangeEmail, DateTime.Now, DateTime.Now.AddDays(PERIOD_DAYS));
+			
+			// setup credentials
+			Muje.Calendar.ClientCredentials.ApiKey = Settings.Default.Api;
+			Muje.Calendar.ClientCredentials.CalendarId = Settings.Default.CalendarId;
+			Muje.Calendar.ClientCredentials.ClientID = Settings.Default.ClientID;
+			Muje.Calendar.ClientCredentials.ClientSecret = Settings.Default.ClientSecret;
 			
 			GoogleCalendar calendar = new GoogleCalendar();
+			calendar.FeedUrl = Settings.Default.FeedUrl;
 			calendar.Login();
 			List<Event> existing = calendar.Retrieve(DateTime.Now, DateTime.Now.AddDays(PERIOD_DAYS));
 			

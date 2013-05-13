@@ -8,9 +8,9 @@ namespace Muje.Calendar
 {
     public abstract class CalendarBase
     {
-    	public string Email = ConfigurationManager.AppSettings["ExchangeEmail"].ToString();
-    	public string Password = ConfigurationManager.AppSettings["ExchangePassword"].ToString();
-    	public string Domain = ConfigurationManager.AppSettings["Domain"].ToString();
+    	public string Email;
+    	public string Password;
+    	public string Domain;
     	
         public abstract List<Appointment> GetAppointments(DateTime date);
         public abstract List<Appointment> GetAppointments(Room target, DateTime date);

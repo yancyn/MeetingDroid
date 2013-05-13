@@ -16,9 +16,11 @@ namespace Muje.Calendar.Test
     [TestFixture]
     public class EWSTest
     {
-    	private static string email = ConfigurationManager.AppSettings["ExchangeEmail"].ToString();
-    	private static string password = ConfigurationManager.AppSettings["ExchangePassword"].ToString();
-    	private static string domain = ConfigurationManager.AppSettings["Domain"].ToString();
+    	// TODO: Setup exchange credential
+    	private static string email;
+    	private static string password;
+    	private static string domain;
+    	
     	private EWS target;
     	
     	private void PrintAppointment(Appointment appointment)
@@ -40,7 +42,7 @@ namespace Muje.Calendar.Test
     	[SetUp]
     	public void Initialize()
     	{
-    		target = new EWS();
+    		target = new EWS{Email=email, Password=password, Domain=domain};
     	}
     	
         /// <summary>

@@ -39,6 +39,10 @@ namespace Muje.Calendar
 		private static OAuth2Authenticator<WebServerClient> _authenticator;
         private IAuthorizationState _state;
         /// <summary>
+        /// Google Calendar private feed url.
+        /// </summary>
+        public string FeedUrl {get;set;}
+        /// <summary>
         /// The last segment in feed url which will use to determine valid id for event.
         /// </summary>
         private string feedKey = null;
@@ -282,17 +286,15 @@ namespace Muje.Calendar
         	try
         	{
         	
-	        	// TODO: Use https://www.google.com/calendar/feeds/yancyn@gmail.com/private/full need authorize.
-	        	// Use https://www.google.com/calendar/feeds/yancyn%40gmail.com/private-a64035cf96c74f70d3f5c8787a5e500e/basic no need to authorize
-	        	string feed = ConfigurationManager.AppSettings["FeedUrl"].ToString();
+	        	// TODO: Use https://www.google.com/calendar/feeds/your@email.com/private/full need authorize.
 	        	if(feedKey == null)
 	        	{
-	        		string[] segments = feed.Split(new char[]{'/'});
+	        		string[] segments = this.FeedUrl.Split(new char[]{'/'});
 	        		if(segments.Length>0) feedKey = segments[segments.Length-1];
 	        	}
 	        	
 	        	List<string> ids = new List<string>();        	
-	        	HttpWebRequest request = (HttpWebRequest)WebRequest.Create(feed);
+	        	HttpWebRequest request = (HttpWebRequest)WebRequest.Create(this.FeedUrl);
 				using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
 				{
 					using (StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8))

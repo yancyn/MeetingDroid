@@ -34,15 +34,5 @@ namespace GoogleCalendarSync
 			System.Diagnostics.Debug.WriteLine("open browser for help");
 			Process.Start("https://code.google.com/apis/console");
 		}
-		
-		/// <summary>
-		/// TODO: Save into config file.
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
-		void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-		{
-			System.Diagnostics.Debug.WriteLine("saving into config file...");
-		}
 	}
 }

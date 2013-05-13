@@ -1,13 +1,15 @@
 <Window
-	x:Class="GoogleCalendarSync.ConfigForm" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	x:Class="GoogleCalendarSync.ConfigForm"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:g="clr-namespace:GoogleCalendarSync"
 	WindowStyle="ToolWindow"
-	Closing="Window_Closing"
 	WindowStartupLocation="CenterScreen"
 	Title="Setting"
 	SizeToContent="WidthAndHeight"
 	ShowInTaskbar="False"
 	ResizeMode="NoResize">
-	<WrapPanel Orientation="Vertical">
+	<WrapPanel Orientation="Vertical" DataContext="{Binding Source={x:Static g:Settings.Default}}">
 		<GroupBox Header="Microsoft Exchange 2010">
 			<Grid>
 				<Grid.RowDefinitions>
@@ -20,11 +22,11 @@
 					<ColumnDefinition Width="200" />
 				</Grid.ColumnDefinitions>
 				<Label Grid.Row="0" Grid.Column="0" Content="Email" HorizontalAlignment="Right" />
-				<TextBox Grid.Row="0" Grid.Column="1" />
+				<TextBox Grid.Row="0" Grid.Column="1" Text="{Binding ExchangeEmail,Mode=TwoWay}" />
 				<Label Grid.Row="1" Grid.Column="0" Content="Password" HorizontalAlignment="Right" />
-				<PasswordBox Grid.Row="1" Grid.Column="1" />
+				<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding ExchangePassword,Mode=TwoWay}" />
 				<Label Grid.Row="2" Grid.Column="0" Content="Domain" HorizontalAlignment="Right" />
-				<TextBox Grid.Row="2" Grid.Column="1" Width="30" HorizontalAlignment="Left" />
+				<TextBox Grid.Row="2" Grid.Column="1" Width="30" HorizontalAlignment="Left" Text="{Binding Domain,Mode=TwoWay}" />
 			</Grid>
 		</GroupBox>
 	
@@ -48,16 +50,20 @@
 					<ColumnDefinition Width="200" />
 				</Grid.ColumnDefinitions>
 				<Label Grid.Row="0" Grid.Column="0" Content="CalendarId" HorizontalAlignment="Right" />
-				<TextBox Grid.Row="0" Grid.Column="1" />
+				<TextBox Grid.Row="0" Grid.Column="1" Text="{Binding CalendarId,Mode=TwoWay}" />
 				<Label Grid.Row="1" Grid.Column="0" Content="Feed" ToolTip="Feed Url" HorizontalAlignment="Right" />
-				<TextBox Grid.Row="1" Grid.Column="1" />
+				<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding FeedUrl,Mode=TwoWay}" />
 				<Label Grid.Row="2" Grid.Column="0" Content="ClientID" HorizontalAlignment="Right" />
-				<TextBox Grid.Row="2" Grid.Column="1" />
+				<TextBox Grid.Row="2" Grid.Column="1" Text="{Binding ClientID,Mode=TwoWay}" />
 				<Label Grid.Row="3" Grid.Column="0" Content="Client Secret" HorizontalAlignment="Right" />
-				<PasswordBox Grid.Row="3" Grid.Column="1" />
+				<TextBox Grid.Row="3" Grid.Column="1" Text="{Binding ClientSecret,Mode=TwoWay}" />
 				<Label Grid.Row="4" Grid.Column="0" Content="Api" HorizontalAlignment="Right" />
-				<TextBox Grid.Row="4" Grid.Column="1" />
+				<TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Api,Mode=TwoWay}" />
 			</Grid>
 		</GroupBox>
+	
+	    <WrapPanel HorizontalAlignment="Right">
+            <Button Command="{Binding SaveSetting}">Save</Button>
+        </WrapPanel>
 	</WrapPanel>
 </Window>

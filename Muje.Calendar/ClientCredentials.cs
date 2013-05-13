@@ -29,27 +29,27 @@ namespace Muje.Calendar
     /// For your own application you should find a more secure way than just storing your client secret inside a string,
     /// as it can be lookup up easily using a reflection tool.
     /// </summary>
-    internal static class ClientCredentials
+    public static class ClientCredentials
     {
         /// <summary>
         /// The OAuth2.0 Client ID of your project.
         /// </summary>
-        public static readonly string ClientID = ConfigurationManager.AppSettings["ClientID"].ToString();
+        public static string ClientID;
 
         /// <summary>
         /// The OAuth2.0 Client secret of your project.
         /// </summary>
-        public static readonly string ClientSecret = ConfigurationManager.AppSettings["ClientSecret"].ToString();
+        public static string ClientSecret;
 
         /// <summary>
         /// Your Api/Developer key.
         /// </summary>
-        public static readonly string ApiKey = ConfigurationManager.AppSettings["Api"].ToString();
+        public static string ApiKey;
         
         /// <summary>
         /// You calendar Id. Normally is your gmail full address. ie. youremail@gmail.com
         /// </summary>
-        public static readonly string CalendarId = ConfigurationManager.AppSettings["CalendarId"].ToString();
+        public static string CalendarId;
 
         #region Verify Credentials
         static ClientCredentials()

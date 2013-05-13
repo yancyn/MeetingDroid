@@ -67,12 +67,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\GoogleCalendarSync\app.config">
-      <Link>app.config</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Muje.Calendar\Muje.Calendar.csproj">
       <Project>{0774983D-7941-46BB-A7A8-0A54B9A58BB6}</Project>
       <Name>Muje.Calendar</Name>
