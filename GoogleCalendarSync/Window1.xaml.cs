@@ -43,6 +43,7 @@ namespace GoogleCalendarSync
 			System.Windows.Forms.NotifyIcon icon = new System.Windows.Forms.NotifyIcon();
 			Stream stream = Application.GetResourceStream(new Uri("pack://application:,,,/cal.ico", UriKind.Absolute)).Stream; // MUST set icon build as resource
 			ni.Icon = new System.Drawing.Icon(stream);
+			ni.Text = "GoogleCalendarSync";
 			ni.Visible = true;
 			ni.ContextMenuStrip = InitialMenu();
 			ni.DoubleClick += delegate(object sender, EventArgs e) { Notify();};

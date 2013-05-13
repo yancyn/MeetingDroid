@@ -52,7 +52,8 @@
 				<Label Grid.Row="0" Grid.Column="0" Content="CalendarId" HorizontalAlignment="Right" />
 				<TextBox Grid.Row="0" Grid.Column="1" Text="{Binding CalendarId,Mode=TwoWay}" />
 				<Label Grid.Row="1" Grid.Column="0" Content="Feed" ToolTip="Feed Url" HorizontalAlignment="Right" />
-				<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding FeedUrl,Mode=TwoWay}" />
+				<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding FeedUrl,Mode=TwoWay}"
+				         ToolTip="This is the private feed under your Google Calendar Setting" />
 				<Label Grid.Row="2" Grid.Column="0" Content="ClientID" HorizontalAlignment="Right" />
 				<TextBox Grid.Row="2" Grid.Column="1" Text="{Binding ClientID,Mode=TwoWay}" />
 				<Label Grid.Row="3" Grid.Column="0" Content="Client Secret" HorizontalAlignment="Right" />
