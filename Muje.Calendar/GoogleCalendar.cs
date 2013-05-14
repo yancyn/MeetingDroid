@@ -198,7 +198,10 @@ namespace Muje.Calendar
         		// TODO: Add attendee
         		string quickText = string.Empty;
         		quickText += appointment.Start.ToString("yyyy-MM-dd h:mmtt");
-        		quickText += "-" + appointment.End.ToString("h:mmtt");
+        		
+        		string to = appointment.End.ToString("h:mmtt");
+        		if(to.Equals("12:00AM")) to = "00:00AM";// QuickAdd bug: 12AM is confusing to google console.
+        		quickText += "-" + to;
         		quickText += " " + appointment.Subject;
         		quickText += " at " + appointment.Location;
         		System.Diagnostics.Debug.WriteLine(quickText);
