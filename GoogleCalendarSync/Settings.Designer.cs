@@ -102,13 +102,24 @@ namespace GoogleCalendarSync {
 		
 		[global::System.Configuration.UserScopedSettingAttribute()]
 		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-			"d3f5c8787a5e500e/full")]
 		public string FeedUrl {
 			get {
 				return ((string)(this["FeedUrl"]));
 			}
 			set {
 				this["FeedUrl"] = value;
+			}
+		}
+			
+		[global::System.Configuration.UserScopedSettingAttribute()]
+		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+		[global::System.Configuration.DefaultSettingValueAttribute("4")]
+		public int Interval {
+			get {
+				return ((int)(this["Interval"]));
+			}
+			set {
+				this["Interval"] = value;
 			}
 		}
 		

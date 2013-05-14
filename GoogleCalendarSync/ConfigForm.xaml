@@ -34,7 +34,7 @@
 			<GroupBox.Header>
 				<WrapPanel>
 					<TextBlock Text="Google Calendar API" />
-					<Image Source="help.png" ToolTip="How to" MouseDown="Image_MouseDown" Margin="4" />
+					<Image Cursor="Hand" Source="help.png" ToolTip="How to" MouseDown="Image_MouseDown" Margin="4" />
 				</WrapPanel>
 			</GroupBox.Header>
 			<Grid>
@@ -67,17 +67,23 @@
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto" />
 				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
 			</Grid.RowDefinitions>
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="80" />
 				<ColumnDefinition Width="200" />
 			</Grid.ColumnDefinitions>
-			<Label Grid.Row="0" Grid.Column="0" Content="Sync to days" ToolTip="The more days slower to sync" />
-			<Slider Grid.Row="0" Grid.Column="1" Minimum="1" Maximum="60" IsSnapToTickEnabled="True" TickFrequency="1"
+			<Label Grid.Row="0" Grid.Column="0" Content="Interval" ToolTip="Interval to sync" HorizontalAlignment="Right"/>
+			<WrapPanel Grid.Row="0" Grid.Column="1">
+				<TextBox Width="30" Text="{Binding Interval,Mode=TwoWay}" />
+				<Label Content="h"/>
+			</WrapPanel>
+			<Label Grid.Row="1" Grid.Column="0" Content="Days to sync" ToolTip="The more days slower to sync" />
+			<Slider Grid.Row="1" Grid.Column="1" Minimum="1" Maximum="60" IsSnapToTickEnabled="True" TickFrequency="1"
 			        Value="{Binding PeriodDays,Mode=TwoWay}"
 			        ToolTip="{Binding RelativeSource={RelativeSource Self},Path=Value}" />
-			<Label Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right" Content="1" />
-			<Label Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right" Content="60" />
+			<Label Grid.Row="2" Grid.Column="0" HorizontalAlignment="Right" Content="1" />
+			<Label Grid.Row="2" Grid.Column="1" HorizontalAlignment="Right" Content="60" />
 		</Grid>
 	
 	    <WrapPanel HorizontalAlignment="Right">

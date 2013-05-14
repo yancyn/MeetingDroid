@@ -28,6 +28,9 @@
     <Setting Name="FeedUrl" Type="System.String" Scope="User" Roaming="false">
       <Value />
     </Setting>
+	<Setting Name="Interval" Type="System.Int32" Scope="User" Roaming="false">
+      <Value Profile="(Default)">4</Value>
+    </Setting>
     <Setting Name="PeriodDays" Type="System.Int32" Scope="User" Roaming="false">
       <Value Profile="(Default)">30</Value>
     </Setting>

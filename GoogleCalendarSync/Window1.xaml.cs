@@ -10,14 +10,15 @@ using System;
 using System.Configuration;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using System.IO;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 using Google.Apis.Calendar.v3.Data;
 using Microsoft.Exchange.WebServices.Data;
@@ -31,6 +32,7 @@ namespace GoogleCalendarSync
 	public partial class Window1 : Window
 	{
 		private bool alreadyFocus = false;
+		private DispatcherTimer timer = new DispatcherTimer();
 		
 		public Window1()
 		{
@@ -51,6 +53,11 @@ namespace GoogleCalendarSync
 			stream.Flush();
 			stream.Close();
 		}
+		
+		/// <summary>
+		/// Initial layout for menu.
+		/// </summary>
+		/// <returns></returns>
 		private System.Windows.Forms.ContextMenuStrip InitialMenu()
 		{
 			System.Windows.Forms.ContextMenuStrip menu = new System.Windows.Forms.ContextMenuStrip();
@@ -67,17 +74,11 @@ namespace GoogleCalendarSync
 			menu.Items.Add(m1);
 			
 			System.Windows.Forms.ToolStripMenuItem m2 = new System.Windows.Forms.ToolStripMenuItem();
-			m2.Text = "Close";
+			m2.Text = "Exit";
 			m2.Click += delegate(object sender, EventArgs e) { this.Close(); };
 			menu.Items.Add(m2);
 			
 			return menu;
-		}
-		
-		void window1_Initialized(object sender, EventArgs e)
-		{
-			System.Diagnostics.Debug.WriteLine("window1_Inititialized");			
-			//Sync();Test()
 		}
 		private void Test()
 		{
@@ -99,7 +100,7 @@ namespace GoogleCalendarSync
 			EventLists.ItemsSource = events;
 		}
 		/// <summary>
-		/// 
+		/// Sync action.
 		/// </summary>
 		private void Sync()
 		{
@@ -134,7 +135,7 @@ namespace GoogleCalendarSync
 			{
 				if(!calendar.Contains(appointment, existing))
 				{
-					PrintAppointment(appointment);
+					//PrintAppointment(appointment);
 					calendar.Insert(appointment);
 					
 					Event i = new Event();
@@ -197,6 +198,15 @@ namespace GoogleCalendarSync
 		{
 			return System.Windows.SystemParameters.PrimaryScreenHeight - System.Windows.SystemParameters.WorkArea.Height;
 		}
+		
+		void window1_Initialized(object sender, EventArgs e)
+		{
+			System.Diagnostics.Debug.WriteLine("window1_Inititialized");			
+			
+			timer.Tick += delegate { Sync(); };
+			timer.Interval = new TimeSpan(0,Settings.Default.Interval*60,0);
+			timer.Start();
+		}
 		void window1_Loaded(object sender, RoutedEventArgs e)
 		{
 			System.Diagnostics.Debug.WriteLine("window1_Loaded");
@@ -211,8 +221,7 @@ namespace GoogleCalendarSync
 		{
 			System.Diagnostics.Debug.WriteLine("Window_Leave");
 			if(alreadyFocus) this.Visibility = Visibility.Hidden;
-		}
-		
+		}		
 		void Window_MouseEnter(object sender, MouseEventArgs e)
 		{
 			System.Diagnostics.Debug.WriteLine("Window_MouseEnter");
