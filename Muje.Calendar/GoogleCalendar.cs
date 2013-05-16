@@ -223,7 +223,7 @@ namespace Muje.Calendar
         	string[] recurrance = new string[] {"Daily", "daily", "Monthly", "monthly", "Yearly", "yearly", "Every", "every"};
         	foreach(string recur in recurrance)
         		subject = subject.Replace(recur, string.Empty);
-        	return subject;
+        	return subject.Trim();
         }
         /// <summary>
         /// Retrieve event from calendar. Return null if not exist.
@@ -412,7 +412,8 @@ namespace Muje.Calendar
 				int end = e.Summary.IndexOf("at");
 				if(end > -1) subjectOnly = e.Summary.Substring(0, end).Trim();
 				
-				if(e.Summary.Equals(appointment.Subject) || subjectOnly.Equals(appointment.Subject))
+				string appointmentSubject = trimSubject(appointment.Subject.Trim());				
+				if(e.Summary.Equals(appointmentSubject) || subjectOnly.Equals(appointmentSubject))
 				{
 					if(e.Start != null && e.Start.DateTime.Length >= 10)
 					{
