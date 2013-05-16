@@ -95,7 +95,8 @@ namespace Muje.Calendar
             FindItemsResults<Appointment> result = service.FindAppointments(calendarFolder,calendarView);
             foreach(Appointment appointment in result)
             {
-            	output.Add(appointment);
+            	if(!appointment.IsCancelled)
+            		output.Add(appointment);
                 //System.Diagnostics.Debug.WriteLine(string.Format("{0}({1}-{2})",
                 //    appointment.Subject, appointment.Start, appointment.End.ToShortTimeString()));
             }

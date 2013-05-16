@@ -102,6 +102,17 @@ namespace Muje.Calendar.Test
         	// Expected today has meeting at least
             Assert.AreNotEqual(0, target.GetAppointments(DateTime.Now).Count);
         }
+        /// <summary>
+        /// List out all my appointment for one month from now.
+        /// </summary>
+        [Test]
+        public void GetMyOneMonthAppointmentsTest()
+        {
+        	List<Appointment> actual = target.GetAppointments(email,DateTime.Now, DateTime.Now.AddDays(30));
+        	foreach(Appointment appointment in actual)
+        		PrintAppointment(appointment);
+        	Assert.AreNotEqual(0,actual.Count);
+        }
         [Test]
         public void GetPHATMeetingTest()
         {

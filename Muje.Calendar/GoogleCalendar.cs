@@ -168,7 +168,7 @@ namespace Muje.Calendar
         /// <remarks>
         /// Currently using quick add method where direct insert seems like not success at all.
         /// </remarks>
-        /// <seealso cref="http://support.google.com/calendar/answer/36604">Quick Add</seealso>
+        /// <seealso cref="http://support.google.com/calendar/answer/36604">Help: Quick Add</seealso>
         /// <seealso cref="https://groups.google.com/forum/#!searchin/google-api-dotnet-client/event/google-api-dotnet-client/zal0b3322iM/p3Eu9sYjUVwJ">Unable to insert events (400 error), but QuickAdd okay</seealso>
         /// <param name="e"></param>
         public void Insert(Appointment appointment) //Event e)
@@ -202,7 +202,7 @@ namespace Muje.Calendar
         		string to = appointment.End.ToString("h:mmtt");
         		if(to.Equals("12:00AM")) to = "00:00AM";// QuickAdd bug: 12AM is confusing to google console.
         		quickText += "-" + to;
-        		quickText += " " + appointment.Subject;
+        		quickText += " " + trimSubject(appointment.Subject);
         		quickText += " at " + appointment.Location;
         		System.Diagnostics.Debug.WriteLine(quickText);
         		service.Events.QuickAdd(ClientCredentials.CalendarId, quickText).Fetch();
@@ -212,6 +212,18 @@ namespace Muje.Calendar
         		System.Diagnostics.Debug.WriteLine(ex.ToString());
         		throw ex;
         	}
+        }
+        /// <summary>
+        /// Trim event's subject to prevent causing recurrance in Google Calendar QuickAdd.
+        /// </summary>
+        /// <returns></returns>
+        private string trimSubject(string subject)
+        {
+        	// TODO: Weekday? ie. Every Wednesday
+        	string[] recurrance = new string[] {"Daily", "daily", "Monthly", "monthly", "Yearly", "yearly", "Every", "every"};
+        	foreach(string recur in recurrance)
+        		subject = subject.Replace(recur, string.Empty);
+        	return subject;
         }
         /// <summary>
         /// Retrieve event from calendar. Return null if not exist.
