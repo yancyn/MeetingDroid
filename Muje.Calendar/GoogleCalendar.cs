@@ -218,12 +218,13 @@ namespace Muje.Calendar
         /// Trim event's subject to prevent causing recurrance in Google Calendar QuickAdd.
         /// </summary>
         /// <returns></returns>
-        private string trimSubject(string subject)
+        public string trimSubject(string subject)
         {
         	// TODO: Weekday? ie. Every Wednesday
         	string[] recurrance = new string[] {"Daily", "daily", "Monthly", "monthly", "Yearly", "yearly", "Every", "every"};
         	foreach(string recur in recurrance)
         		subject = subject.Replace(recur, string.Empty);
+        	subject = subject.Replace("  "," ");//eliminates extra whitespace.
         	return subject.Trim();
         }
         /// <summary>

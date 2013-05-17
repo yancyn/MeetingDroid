@@ -163,6 +163,20 @@ namespace Muje.Calendar.Test
 			int end = source.IndexOf("at");
 			string actual = source.Substring(0,end).Trim();
 			Assert.AreEqual(expected,actual);
+			
+			source = "Engineering Solutions Staff Meeting (KT Lau x2282) at ConfRm Penang ATC - Auditorium";
+			expected = "Engineering Solutions Staff Meeting (KT Lau x2282)";
+			end = source.IndexOf("at");
+			actual = source.Substring(0,end).Trim();
+			Assert.AreEqual(expected,actual);			
+		}
+		[Test]
+		public void TrimSubjectTest()
+		{
+			string source = "Engineering Solutions Staff Monthly Meeting (KT Lau x2282)";
+			string expected = "Engineering Solutions Staff Meeting (KT Lau x2282)";
+			string actual = calendar.trimSubject(source);
+			Assert.AreEqual(expected, actual);			
 		}
 	}
 }
