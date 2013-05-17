@@ -203,7 +203,8 @@ namespace Muje.Calendar
         		if(to.Equals("12:00AM")) to = "00:00AM";// QuickAdd bug: 12AM is confusing to google console.
         		quickText += "-" + to;
         		quickText += " " + trimSubject(appointment.Subject);
-        		quickText += " at " + appointment.Location;
+        		if(appointment.Location != null && appointment.Location.Length > 0)
+        			quickText += " at " + appointment.Location;
         		System.Diagnostics.Debug.WriteLine(quickText);
         		service.Events.QuickAdd(ClientCredentials.CalendarId, quickText).Fetch();
         	}
@@ -406,13 +407,13 @@ namespace Muje.Calendar
 		/// <returns></returns>
 		public bool Contains(Appointment appointment, List<Event> events)
 		{
+			// trim Outlook's appointment like the way insert into Google Calendar.
+			string appointmentSubject = trimSubject(appointment.Subject.Trim());
 			foreach(Event e in events)
 			{				
 				string subjectOnly = string.Empty;
 				int end = e.Summary.IndexOf("at");
-				if(end > -1) subjectOnly = e.Summary.Substring(0, end).Trim();
-				
-				string appointmentSubject = trimSubject(appointment.Subject.Trim());				
+				if(end > -1) subjectOnly = e.Summary.Substring(0, end).Trim();				
 				if(e.Summary.Equals(appointmentSubject) || subjectOnly.Equals(appointmentSubject))
 				{
 					if(e.Start != null && e.Start.DateTime.Length >= 10)
