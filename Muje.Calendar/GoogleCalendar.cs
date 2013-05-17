@@ -221,10 +221,10 @@ namespace Muje.Calendar
         public string trimSubject(string subject)
         {
         	// TODO: Weekday? ie. Every Wednesday
-        	string[] recurrance = new string[] {"Daily", "daily", "Monthly", "monthly", "Yearly", "yearly", "Every", "every"};
+        	string[] recurrance = new string[] {"Daily ", "daily ", "Monthly ", "monthly ", "Yearly ", "yearly ", "Every ", "every "};
         	foreach(string recur in recurrance)
         		subject = subject.Replace(recur, string.Empty);
-        	subject = subject.Replace("  "," ");//eliminates extra whitespace.
+        	//subject = subject.Replace("  "," ");//eliminates extra whitespace.
         	return subject.Trim();
         }
         /// <summary>
