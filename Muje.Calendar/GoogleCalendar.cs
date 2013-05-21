@@ -243,6 +243,15 @@ namespace Muje.Calendar
         	return service.Events.Get(ClientCredentials.CalendarId,eventId).Fetch();
         }
         /// <summary>
+        /// Delete selected event from calendar database.
+        /// </summary>
+        /// <param name="e"></param>
+        public void Delete(Event e)
+        {
+        	service.Events.Delete(ClientCredentials.CalendarId, e.Id).Fetch();
+        	System.Diagnostics.Debug.WriteLine("Event '"+e.Summary+"' deleted.");
+        }
+        /// <summary>
         /// Retrieve event between a period of time.
         /// </summary>
         /// <param name="start"></param>
@@ -414,7 +423,7 @@ namespace Muje.Calendar
 			{				
 				string subjectOnly = string.Empty;
 				int end = e.Summary.IndexOf("at");
-				if(end > -1) subjectOnly = e.Summary.Substring(0, end).Trim();				
+				if(end > -1) subjectOnly = e.Summary.Substring(0, end).Trim();
 				if(e.Summary.Equals(appointmentSubject) || subjectOnly.Equals(appointmentSubject))
 				{
 					if(e.Start != null && e.Start.DateTime.Length >= 10)
@@ -427,6 +436,35 @@ namespace Muje.Calendar
 			}
 			
 			return false;
+		}
+		/// <summary>
+		/// Determine Google Calendar exist in the latest appointment result from EWS query.
+		/// If not found mean the Appointment been moved or removed.
+		/// </summary>
+		/// <param name="e"></param>
+		/// <param name="appointments"></param>
+		/// <returns></returns>
+		public bool Contains(Event e, List<Appointment> appointments)
+		{
+			bool found = false;
+			foreach(Appointment appointment in appointments)
+			{
+				string appointmentSubject = trimSubject(appointment.Subject.Trim());
+				string subjectOnly = string.Empty;
+				int end = e.Summary.IndexOf("at");
+				if(end > -1) subjectOnly = e.Summary.Substring(0, end).Trim();
+				if(e.Summary.Equals(appointmentSubject) || subjectOnly.Equals(appointmentSubject))
+				{
+					if(e.Start != null && e.Start.DateTime.Length >= 10)
+					{
+						DateTime start = DateTime.Parse(e.Start.DateTime);
+						if(start.Equals(appointment.Start))
+							return true;
+					}
+				}
+			}
+			
+			return found;
 		}
 	}
 }

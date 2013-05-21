@@ -155,6 +155,15 @@ namespace GoogleCalendarSync
 					events.Add(i);
 				}
 			}
+			
+			// TODO: loop another way round to determine deleted or updated appointment from EWS result
+			// Wrong assumption because there might be not all item in Google Calendar were synced from company.
+			// There are self created event also if the targeted sync CalendarId is NOT the only 1-to-1 use.
+//			foreach(Event e in existing)
+//			{
+//				if(!calendar.Contains(e, appointments))
+//					calendar.Delete(e);
+//			}
 
 			// If no new appointment simply add a false appointment to notify as well.
 			if(events.Count == 0)
