@@ -136,34 +136,17 @@ namespace GoogleCalendarSync
 				if(!calendar.Contains(appointment, existing))
 				{
 					//PrintAppointment(appointment);
-					calendar.Insert(appointment);
-					
-					Event i = new Event();
-					i.Id = appointment.Id.ToString();
-					i.Summary = appointment.Subject;
-					i.Location = appointment.Location;
-					
-					EventDateTime start = new EventDateTime();
-					start.DateTime = appointment.Start.ToString("yyyy-MM-ddTHH:mmzzz");//ToUniversalTime().ToString()
-					start.TimeZone = appointment.Start.ToString("zzz");
-					i.Start = start;
-					
-					EventDateTime end = new EventDateTime();
-					end.DateTime = appointment.End.ToString("yyyy-MM-ddTHH:mmzzz");
-					end.TimeZone = appointment.End.ToString("zzz");
-					i.End = end;
-					events.Add(i);
+					events.Add(calendar.Insert(appointment));
 				}
 			}
 			
-			// TODO: loop another way round to determine deleted or updated appointment from EWS result
-			// Wrong assumption because there might be not all item in Google Calendar were synced from company.
-			// There are self created event also if the targeted sync CalendarId is NOT the only 1-to-1 use.
-//			foreach(Event e in existing)
-//			{
-//				if(!calendar.Contains(e, appointments))
-//					calendar.Delete(e);
-//			}
+			// Assuming retrieve those only sync to Google Calendar previously
+			// if not found with the latest result from EWS means been removed or updated.
+			foreach(Event e in existing)
+			{
+				if(!calendar.Contains(e, appointments))
+					calendar.Delete(e);
+			}
 
 			// If no new appointment simply add a false appointment to notify as well.
 			if(events.Count == 0)

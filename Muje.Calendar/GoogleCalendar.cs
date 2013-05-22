@@ -37,27 +37,30 @@ namespace Muje.Calendar
 	{
 		private CalendarService service;
 		private static OAuth2Authenticator<WebServerClient> _authenticator;
-        private IAuthorizationState _state;
-        /// <summary>
-        /// Google Calendar private feed url.
-        /// </summary>
-        public string FeedUrl {get;set;}
-        /// <summary>
-        /// The last segment in feed url which will use to determine valid id for event.
-        /// </summary>
-        private string feedKey = null;
-        
+		private IAuthorizationState _state;
 		/// <summary>
-        /// Returns the authorization state which was either cached or set for this session.
-        /// </summary>
-        private IAuthorizationState AuthState
-        {
-            get
-            {
-                return _state ?? HttpContext.Current.Session["AUTH_STATE"] as IAuthorizationState;
-            }
-        }
-        
+		/// Google Calendar private feed url.
+		/// </summary>
+		public string FeedUrl {get;set;}
+		/// <summary>
+		/// The last segment in feed url which will use to determine valid id for event.
+		/// </summary>
+		private string feedKey = null;		
+		/// <summary>
+		/// Returns the authorization state which was either cached or set for this session.
+		/// </summary>
+		private IAuthorizationState AuthState
+		{
+			get
+			{
+				return _state ?? HttpContext.Current.Session["AUTH_STATE"] as IAuthorizationState;
+			}
+		}
+		/// <summary>
+		/// Mark as a label synced from Microsoft Outlook 2010.
+		/// </summary>
+		const string NOTES = "Synced from EWS.";
+		
 		public GoogleCalendar()
 		{
 		}
@@ -65,7 +68,7 @@ namespace Muje.Calendar
 		{
 			try
 			{
-	            var provider = new NativeApplicationClient(GoogleAuthenticationServer.Description)
+				var provider = new NativeApplicationClient(GoogleAuthenticationServer.Description)
 				{
 					ClientIdentifier = ClientCredentials.ClientID,
 					ClientSecret = ClientCredentials.ClientSecret
@@ -75,7 +78,7 @@ namespace Muje.Calendar
 			}
 			catch(Exception ex)
 			{
-				System.Diagnostics.Debug.WriteLine(ex.ToString());
+				System.Diagnostics.Debug.WriteLine(ex);
 				throw ex;
 			}
 		}
@@ -84,99 +87,98 @@ namespace Muje.Calendar
 			try
 			{
 				_authenticator = CreateAuthenticator();
-	            service = new CalendarService(new BaseClientService.Initializer(){Authenticator = _authenticator});
-	            
-	            // Check if we received OAuth2 credentials with this request; if yes: parse it.
-	            if (HttpContext.Current != null && HttpContext.Current.Request["code"] != null) _authenticator.LoadAccessToken();
+				service = new CalendarService(new BaseClientService.Initializer(){Authenticator = _authenticator});
+				
+				// Check if we received OAuth2 credentials with this request; if yes: parse it.
+				if (HttpContext.Current != null && HttpContext.Current.Request["code"] != null) _authenticator.LoadAccessToken();
 			}
 			catch(Exception ex)
 			{
-				System.Diagnostics.Debug.WriteLine(ex.ToString());
+				System.Diagnostics.Debug.WriteLine(ex);
 				throw ex;
 			}
 		}
 		private OAuth2Authenticator<WebServerClient> CreateAuthenticator()
-        {
-            // Register the authenticator.
-            var provider = new WebServerClient(GoogleAuthenticationServer.Description);
-            provider.ClientIdentifier = ClientCredentials.ClientID;
-            provider.ClientSecret = ClientCredentials.ClientSecret;
-            var authenticator = new OAuth2Authenticator<WebServerClient>(provider, GetAuthorization) { NoCaching = true };
-            return authenticator;
-        }
+		{
+			// Register the authenticator.
+			var provider = new WebServerClient(GoogleAuthenticationServer.Description);
+			provider.ClientIdentifier = ClientCredentials.ClientID;
+			provider.ClientSecret = ClientCredentials.ClientSecret;
+			var authenticator = new OAuth2Authenticator<WebServerClient>(provider, GetAuthorization) { NoCaching = true };
+			return authenticator;
+		}
 
-        private IAuthorizationState GetAuthorization(WebServerClient client)
-        {
-            // If this user is already authenticated, then just return the auth state.
-            IAuthorizationState state = AuthState;
-            if (state != null)
-            {
-                return state;
-            }
+		private IAuthorizationState GetAuthorization(WebServerClient client)
+		{
+			// If this user is already authenticated, then just return the auth state.
+			IAuthorizationState state = AuthState;
+			if (state != null)
+			{
+				return state;
+			}
 
-            // Check if an authorization request already is in progress.
-            state = client.ProcessUserAuthorization(new HttpRequestInfo(HttpContext.Current.Request));
-            if (state != null && (!string.IsNullOrEmpty(state.AccessToken) || !string.IsNullOrEmpty(state.RefreshToken)))
-            {
-                // Store and return the credentials.
-                HttpContext.Current.Session["AUTH_STATE"] = _state = state;
-                return state;
-            }
+			// Check if an authorization request already is in progress.
+			state = client.ProcessUserAuthorization(new HttpRequestInfo(HttpContext.Current.Request));
+			if (state != null && (!string.IsNullOrEmpty(state.AccessToken) || !string.IsNullOrEmpty(state.RefreshToken)))
+			{
+				// Store and return the credentials.
+				HttpContext.Current.Session["AUTH_STATE"] = _state = state;
+				return state;
+			}
 
-            // Otherwise do a new authorization request.
-            string scope = CalendarService.Scopes.CalendarReadonly.GetStringValue();
-            OutgoingWebResponse response = client.PrepareRequestUserAuthorization(new[] { scope });
-            response.Send(); // Will throw a ThreadAbortException to prevent sending another response.
-            return null;
-        }
+			// Otherwise do a new authorization request.
+			string scope = CalendarService.Scopes.CalendarReadonly.GetStringValue();
+			OutgoingWebResponse response = client.PrepareRequestUserAuthorization(new[] { scope });
+			response.Send(); // Will throw a ThreadAbortException to prevent sending another response.
+			return null;
+		}
 		/// <summary>
 		/// TODO: Obtain cache session.
 		/// </summary>
 		/// <param name="client"></param>
 		/// <returns></returns>
-        private static IAuthorizationState GetAuthorization(NativeApplicationClient client)
-        {
-            // You should use a more secure way of storing the key here as
-            // .NET applications can be disassembled using a reflection tool.
-            const string STORAGE = "google.samples.dotnet.calendars";
-            const string KEY = "x{,erdzf11x9;89";
-            string scope = CalendarService.Scopes.Calendar.GetStringValue();
+		private static IAuthorizationState GetAuthorization(NativeApplicationClient client)
+		{
+			// You should use a more secure way of storing the key here as
+			// .NET applications can be disassembled using a reflection tool.
+			const string STORAGE = "google.samples.dotnet.calendars";
+			const string KEY = "x{,erdzf11x9;89";
+			string scope = CalendarService.Scopes.Calendar.GetStringValue();
 
-            // Check if there is a cached refresh token available.
-//            IAuthorizationState state = AuthorizationMgr.GetCachedRefreshToken(STORAGE, KEY);
-//            if (state != null)
-//            {
-//                try
-//                {
-//                    client.RefreshToken(state);
-//                    return state; // Yes - we are done.
-//                }
-//                catch (DotNetOpenAuth.Messaging.ProtocolException ex)
-//                {
-//                    CommandLine.WriteError("Using existing refresh token failed: " + ex.Message);
-//                }
-//            }
+			// Check if there is a cached refresh token available.
+			//            IAuthorizationState state = AuthorizationMgr.GetCachedRefreshToken(STORAGE, KEY);
+			//            if (state != null)
+			//            {
+			//                try
+			//                {
+			//                    client.RefreshToken(state);
+			//                    return state; // Yes - we are done.
+			//                }
+			//                catch (DotNetOpenAuth.Messaging.ProtocolException ex)
+			//                {
+			//                    CommandLine.WriteError("Using existing refresh token failed: " + ex.Message);
+			//                }
+			//            }
 
-            // Retrieve the authorization from the user.
-            IAuthorizationState state = AuthorizationMgr.RequestNativeAuthorization(client, scope);
-            //AuthorizationMgr.SetCachedRefreshToken(STORAGE, KEY, state);
-            return state;
-        }
-        /// <summary>
-        /// Insert into calendar.
-        /// </summary>
-        /// <remarks>
-        /// Currently using quick add method where direct insert seems like not success at all.
-        /// </remarks>
-        /// <seealso cref="http://support.google.com/calendar/answer/36604">Help: Quick Add</seealso>
-        /// <seealso cref="https://groups.google.com/forum/#!searchin/google-api-dotnet-client/event/google-api-dotnet-client/zal0b3322iM/p3Eu9sYjUVwJ">Unable to insert events (400 error), but QuickAdd okay</seealso>
-        /// <param name="e"></param>
-        public void Insert(Appointment appointment) //Event e)
-        {
-        	try
-        	{
-        		// FAIL
-        		/*Event i = new Event();
+			// Retrieve the authorization from the user.
+			IAuthorizationState state = AuthorizationMgr.RequestNativeAuthorization(client, scope);
+			//AuthorizationMgr.SetCachedRefreshToken(STORAGE, KEY, state);
+			return state;
+		}
+		/// <summary>
+		/// Insert into calendar.
+		/// </summary>
+		/// <remarks>
+		/// Currently using quick add method where direct insert seems like not success at all.
+		/// </remarks>
+		/// <param name="appointment">Appointment from EWS.</param>
+		/// <seealso cref="https://groups.google.com/forum/#!searchin/google-api-dotnet-client/event/google-api-dotnet-client/zal0b3322iM/p3Eu9sYjUVwJ">Unable to insert events (400 error), but QuickAdd okay</seealso>
+		public Event Insert(Appointment appointment)
+		{
+			try
+			{
+				// FAIL
+				/*Event i = new Event();
 				//i.Id = appointment.Id.ToString();
 				i.Summary = appointment.Subject;
 				i.Location = appointment.Location;
@@ -191,74 +193,104 @@ namespace Muje.Calendar
 				end.TimeZone = appointment.End.ToString("zzz");
 				i.End = end;
 				
-        		TODO: service.Events.Insert(e,ClientCredentials.CalendarId).Fetch();
-        		*/
-        		
-        		// 2013-05-03 9:00AM-10:00AM PHAT Meeting with Ryan at Lync
-        		// TODO: Add attendee
-        		string quickText = string.Empty;
-        		quickText += appointment.Start.ToString("yyyy-MM-dd h:mmtt");
-        		
-        		string to = appointment.End.ToString("h:mmtt");
-        		if(to.Equals("12:00AM")) to = "00:00AM";// QuickAdd bug: 12AM is confusing to google console.
-        		quickText += "-" + to;
-        		quickText += " " + trimSubject(appointment.Subject);
-        		if(appointment.Location != null && appointment.Location.Length > 0)
-        			quickText += " at " + appointment.Location;
-        		System.Diagnostics.Debug.WriteLine(quickText);
-        		service.Events.QuickAdd(ClientCredentials.CalendarId, quickText).Fetch();
-        	}
-        	catch(Exception ex)
-        	{
-        		System.Diagnostics.Debug.WriteLine(ex.ToString());
-        		throw ex;
-        	}
-        }
-        /// <summary>
-        /// Trim event's subject to prevent causing recurrance in Google Calendar QuickAdd.
-        /// </summary>
-        /// <returns></returns>
-        public string trimSubject(string subject)
-        {
-        	// TODO: Weekday? ie. Every Wednesday
-        	string[] recurrance = new string[] {"Daily ", "daily ", "Monthly ", "monthly ", "Yearly ", "yearly ", "Every ", "every "};
-        	foreach(string recur in recurrance)
-        		subject = subject.Replace(recur, string.Empty);
-        	//subject = subject.Replace("  "," ");//eliminates extra whitespace.
-        	return subject.Trim();
-        }
-        /// <summary>
-        /// Retrieve event from calendar. Return null if not exist.
-        /// </summary>
-        /// <param name="eventId"></param>
-        /// <seealso cref="">https://developers.google.com/google-apps/calendar/instantiate</seealso>
+				// as label synced from Microsoft Outlook 2010
+				i.Description += NOTES;
+				
+				Event created = service.Events.Insert(i, ClientCredentials.CalendarId).Fetch();
+				System.Diagnostics.Debug.WriteLine("Event " + created.Id + " created");
+				*/
+				
+				return QuickAdd(appointment);
+			}
+			catch(Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine(ex);
+				throw ex;
+			}
+		}
+		/// <summary>
+		/// Adding event by QuickAdd method.
+		/// TODO: Add organizer.
+		/// </summary>
+		/// <param name="appointment"></param>
+		/// <seealso cref="https://developers.google.com/google-apps/calendar/v3/reference/events/quickAdd">Events: quickAdd</seealso>
+		/// <seealso cref="http://support.google.com/calendar/answer/36604">Help: Quick Add</seealso>
+		private Event QuickAdd(Appointment appointment)
+		{
+			try
+			{
+				// 2013-05-03 9:00AM-10:00AM PHAT Meeting with Ryan at Lync
+				string quickText = string.Empty;
+				quickText += appointment.Start.ToString("yyyy-MM-dd h:mmtt");
+				string to = appointment.End.ToString("h:mmtt");
+				// QuickAdd bug: 12AM is confusing to google console.
+				if (to.Equals("12:00AM")) to = "00:00AM";
+				quickText += "-" + to;
+				
+				quickText += " " + trimSubject(appointment.Subject);
+				if (appointment.Location != null && appointment.Location.Length > 0)
+					quickText += " at " + appointment.Location;
+//				if(appointment.Organizer.Name != null && appointment.Organizer.Name.Length > 0)
+//					quickText += " with "+appointment.Organizer.Name;
+				System.Diagnostics.Debug.WriteLine(quickText);
+				Event created = service.Events.QuickAdd(ClientCredentials.CalendarId, quickText).Fetch();
+				
+				// Mark as sync from Microsoft Outlook
+				created.Description += NOTES;
+				service.Events.Update(created, ClientCredentials.CalendarId, created.Id).Fetch();
+				return created;
+			}
+			catch(Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine(ex);
+				throw ex;
+			}
+		}
+		/// <summary>
+		/// Trim event's subject to prevent causing recurrance in Google Calendar QuickAdd.
+		/// </summary>
+		/// <returns></returns>
+		public string trimSubject(string subject)
+		{
+			// TODO: Weekday? ie. Every Wednesday
+			string[] recurrance = new string[] {"Daily ", "daily ", "Monthly ", "monthly ", "Yearly ", "yearly ", "Every ", "every "};
+			foreach(string recur in recurrance)
+				subject = subject.Replace(recur, string.Empty);
+			//subject = subject.Replace("  "," ");//eliminates extra whitespace.
+			return subject.Trim();
+		}
+		/// <summary>
+		/// Retrieve event from calendar. Return null if not exist.
+		/// </summary>
+		/// <param name="eventId"></param>
+		/// <seealso cref="">https://developers.google.com/google-apps/calendar/instantiate</seealso>
 		/// <seealso cref="">http://code.google.com/p/google-api-dotnet-client/wiki/OAuth2</seealso>
 		/// <seealso cref="">https://developers.google.com/resources/api-libraries/documentation/calendar/v3/csharp/latest/index.html</seealso>
 		/// <seealso cref="">http://googleappsdeveloper.blogspot.com/2011/11/introducing-next-version-of-google.html</seealso>
 		/// <seealso cref="https://developers.google.com/google-apps/calendar/v3/reference/events/get">Events: get</seealso>
-        /// <returns></returns>
-        public Event Retrieve(string eventId)
-        {
-        	//CalendarListEntry cal = service.CalendarList.Get("").Fetch();
-        	return service.Events.Get(ClientCredentials.CalendarId,eventId).Fetch();
-        }
-        /// <summary>
-        /// Delete selected event from calendar database.
-        /// </summary>
-        /// <param name="e"></param>
-        public void Delete(Event e)
-        {
-        	service.Events.Delete(ClientCredentials.CalendarId, e.Id).Fetch();
-        	System.Diagnostics.Debug.WriteLine("Event '"+e.Summary+"' deleted.");
-        }
-        /// <summary>
-        /// Retrieve event between a period of time.
-        /// </summary>
-        /// <param name="start"></param>
-        /// <param name="end"></param>
-        /// <seealso cref="">http://stackoverflow.com/questions/8537681/google-api-v3-for-dotnet-using-the-calendar-with-an-api-key</seealso>
-        /// <returns></returns>
-        /*public List<Event> Retrieve(DateTime start, DateTime end)
+		/// <returns></returns>
+		public Event Retrieve(string eventId)
+		{
+			//CalendarListEntry cal = service.CalendarList.Get("").Fetch();
+			return service.Events.Get(ClientCredentials.CalendarId,eventId).Fetch();
+		}
+		/// <summary>
+		/// Delete selected event from calendar database.
+		/// </summary>
+		/// <param name="e"></param>
+		public void Delete(Event e)
+		{
+			service.Events.Delete(ClientCredentials.CalendarId, e.Id).Fetch();
+			System.Diagnostics.Debug.WriteLine("Event '"+e.Summary+"' deleted.");
+		}
+		/// <summary>
+		/// Retrieve event between a period of time.
+		/// </summary>
+		/// <param name="start"></param>
+		/// <param name="end"></param>
+		/// <seealso cref="">http://stackoverflow.com/questions/8537681/google-api-v3-for-dotnet-using-the-calendar-with-an-api-key</seealso>
+		/// <returns></returns>
+		/*public List<Event> Retrieve(DateTime start, DateTime end)
         {
         	try
         	{
@@ -287,40 +319,40 @@ namespace Muje.Calendar
         	}
         	catch(Exception ex)
         	{
-        		System.Diagnostics.Debug.WriteLine(ex.ToString());
+        		System.Diagnostics.Debug.WriteLine(ex);
         		throw ex;
         	}
         } */
-        
-        /// <summary>
-        /// HACK: Extract from feed instead of real api then only retrieve one by one from Google api.
-        /// </summary>
-        /// <param name="start"></param>
-        /// <param name="end"></param>
-        /// <returns></returns>
-        public List<Event> Retrieve(DateTime start, DateTime end)
-        {
-        	
-        	/**
-        	 * 1. Retrieve calendar atom.
-        	 * 2. Extract id value.
-        	 * 3. service.Events.Get(ClientCredentials.CalendarId,id).Fetch();
-        	 */
-        	
-        	List<Event> result = new List<Event>();
-        	
-        	try
-        	{
-        	
-	        	// TODO: Use https://www.google.com/calendar/feeds/your@email.com/private/full need authorize.
-	        	if(feedKey == null)
-	        	{
-	        		string[] segments = this.FeedUrl.Split(new char[]{'/'});
-	        		if(segments.Length>0) feedKey = segments[segments.Length-1];
-	        	}
-	        	
-	        	List<string> ids = new List<string>();        	
-	        	HttpWebRequest request = (HttpWebRequest)WebRequest.Create(this.FeedUrl);
+		
+		/// <summary>
+		/// HACK: Extract from feed instead of real api then only retrieve one by one from Google api.
+		/// </summary>
+		/// <param name="start"></param>
+		/// <param name="end"></param>
+		/// <returns></returns>
+		public List<Event> Retrieve(DateTime start, DateTime end)
+		{
+			
+			/**
+			 * 1. Retrieve calendar atom.
+			 * 2. Extract id value.
+			 * 3. service.Events.Get(ClientCredentials.CalendarId,id).Fetch();
+			 */
+			
+			List<Event> result = new List<Event>();
+			
+			try
+			{
+				
+				// TODO: Use https://www.google.com/calendar/feeds/your@email.com/private/full need authorize.
+				if(feedKey == null)
+				{
+					string[] segments = this.FeedUrl.Split(new char[]{'/'});
+					if(segments.Length>0) feedKey = segments[segments.Length-1];
+				}
+				
+				List<string> ids = new List<string>();
+				HttpWebRequest request = (HttpWebRequest)WebRequest.Create(this.FeedUrl);
 				using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
 				{
 					using (StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8))
@@ -338,34 +370,32 @@ namespace Muje.Calendar
 						}
 					}
 				}
-	        	
+				
 				// Retrieve one by one from Google Calendar
 				foreach(string id in ids)
 				{
 					//System.Diagnostics.Debug.WriteLine("Fetching "+id);
-	        		Event e = service.Events.Get(ClientCredentials.CalendarId,id).Fetch();
-	        		if(e.Start != null && e.End != null
-						   && e.Start.DateTime != null && e.End.DateTime != null
-						   && e.Start.DateTime.Length >= 10 && e.End.DateTime.Length >= 10) // 25
+					Event e = service.Events.Get(ClientCredentials.CalendarId,id).Fetch();
+					if(e.Start != null && e.End != null
+					   && e.Start.DateTime != null && e.End.DateTime != null
+					   && e.Start.DateTime.Length >= 10 && e.End.DateTime.Length >= 10) // 25
 					{
 						DateTime eventStart = DateTime.Parse(e.Start.DateTime);
 						DateTime eventEnd = DateTime.Parse(e.End.DateTime);
-						if(eventStart >= start && eventEnd <= end)
-						{
+						if(eventStart >= start && eventEnd <= end && e.Description.Contains(NOTES))
 							result.Add(e);
-						}
 					}
 				}
-        	}
-        	catch (Exception ex)
-        	{
-        		System.Diagnostics.Debug.WriteLine(ex);
-        		throw ex;
-        	}
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine(ex);
+				throw ex;
+			}
 			
-        	return result;
-        }
-        private string ExtractId(string source)
+			return result;
+		}
+		private string ExtractId(string source)
 		{
 			string id = null;
 			
@@ -389,7 +419,7 @@ namespace Muje.Calendar
 		{
 			result = new List<string>();
 			
-			string id = null;			
+			string id = null;
 			int start = source.IndexOf("<id>");
 			int end = source.IndexOf("</id>");
 			if(start == -1 || end == -1) return;
@@ -420,7 +450,7 @@ namespace Muje.Calendar
 			// trim Outlook's appointment like the way insert into Google Calendar.
 			string appointmentSubject = trimSubject(appointment.Subject.Trim());
 			foreach(Event e in events)
-			{				
+			{
 				string subjectOnly = string.Empty;
 				int end = e.Summary.IndexOf("at");
 				if(end > -1) subjectOnly = e.Summary.Substring(0, end).Trim();
