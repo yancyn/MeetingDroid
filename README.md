@@ -4,5 +4,4 @@ A WPF Windows application to replace GoogleCalendarSync which retrieve appointme
 
 Known Issue or Problem
 ----------------------
-1. Fail to obtain credential. It still need to prompt to allow access from browser everytime access the api, quick annoying actually.
-2. By using EWS only able to retrieve appointment from server but not the appointment stored at local pst.
+1. By using EWS only able to retrieve appointment from server but not the appointment stored at local pst.
