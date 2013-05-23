@@ -253,6 +253,7 @@ namespace Muje.Calendar
 		public string trimSubject(string subject)
 		{
 			// TODO: Weekday? ie. Every Wednesday
+			// TODO: If subject contains specific date it will add wrongly also
 			string[] recurrance = new string[] {"Daily ", "daily ", "Monthly ", "monthly ", "Yearly ", "yearly ", "Every ", "every "};
 			foreach(string recur in recurrance)
 				subject = subject.Replace(recur, string.Empty);

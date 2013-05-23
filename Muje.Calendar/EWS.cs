@@ -89,16 +89,13 @@ namespace Muje.Calendar
             Mailbox mailbox = new Mailbox(email);
             FolderId calendarFolder = new FolderId(WellKnownFolderName.Calendar,mailbox);
             
-			// TODO: Filter accepted only? But this is not valid for user has pst setup.
-			// Local appointment will accepted however server copy never updated.
             System.Diagnostics.Debug.WriteLine("start retrieve calendar item");
             FindItemsResults<Appointment> result = service.FindAppointments(calendarFolder,calendarView);
             foreach(Appointment appointment in result)
             {
             	if(!appointment.IsCancelled)
             		output.Add(appointment);
-                //System.Diagnostics.Debug.WriteLine(string.Format("{0}({1}-{2})",
-                //    appointment.Subject, appointment.Start, appointment.End.ToShortTimeString()));
+                //System.Diagnostics.Debug.WriteLine(string.Format("{0}({1}-{2})", appointment.Subject, appointment.Start, appointment.End.ToShortTimeString()));
             }
             
             return output;
