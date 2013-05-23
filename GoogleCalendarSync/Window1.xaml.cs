@@ -67,7 +67,6 @@ namespace GoogleCalendarSync
 			m0.Click += delegate(object sender, EventArgs e) { Sync();Notify(); };
 			menu.Items.Add(m0);
 			
-			// TODO: Add setting form
 			System.Windows.Forms.ToolStripMenuItem m1 = new System.Windows.Forms.ToolStripMenuItem();
 			m1.Text = "Setting";
 			m1.Click += delegate(object sender, EventArgs e) { new ConfigForm().Show(); };
@@ -96,7 +95,7 @@ namespace GoogleCalendarSync
 				stopper ++;
 			}
 			
-			// set newly added event into notification area			
+			// set newly added event into notification area
 			EventLists.ItemsSource = events;
 		}
 		/// <summary>
@@ -152,7 +151,7 @@ namespace GoogleCalendarSync
 			if(events.Count == 0)
 			{
 				Event i = new Event();
-				i.Summary = "No new appointment found!";
+				i.Summary = "No new appointment found until "+DateTime.Now.AddDays(Settings.Default.PeriodDays).ToShortDateString()+".";
 				events.Add(i);
 			}
 			EventLists.ItemsSource = events;
@@ -164,7 +163,7 @@ namespace GoogleCalendarSync
 			alreadyFocus = false;
 		}
 		private void PrintAppointment(Appointment appointment)
-		{			
+		{
 			string output = string.Empty;
 			output += appointment.Id.ToString() + "\t";//ChangeKey //UniqueId
 			output += appointment.Subject;
@@ -190,10 +189,18 @@ namespace GoogleCalendarSync
 		{
 			return System.Windows.SystemParameters.PrimaryScreenHeight - System.Windows.SystemParameters.WorkArea.Height;
 		}
+		private void Allocation()
+		{
+			System.Diagnostics.Debug.WriteLine("Screen width: " + System.Windows.SystemParameters.PrimaryScreenWidth);
+			System.Diagnostics.Debug.WriteLine("Screen height: " + System.Windows.SystemParameters.PrimaryScreenHeight);
+			System.Diagnostics.Debug.WriteLine("Client: " + this.RenderSize);
+			this.Left = System.Windows.SystemParameters.PrimaryScreenWidth - this.RenderSize.Width;
+			this.Top = System.Windows.SystemParameters.PrimaryScreenHeight - this.RenderSize.Height - GetTaskbarHeight();
+		}
 		
 		void window1_Initialized(object sender, EventArgs e)
 		{
-			System.Diagnostics.Debug.WriteLine("window1_Inititialized");			
+			System.Diagnostics.Debug.WriteLine("window1_Inititialized");
 			
 			timer.Tick += delegate { Sync(); };
 			timer.Interval = new TimeSpan(0,Settings.Default.Interval*60,0);
@@ -202,18 +209,13 @@ namespace GoogleCalendarSync
 		void window1_Loaded(object sender, RoutedEventArgs e)
 		{
 			System.Diagnostics.Debug.WriteLine("window1_Loaded");
-			
-			System.Diagnostics.Debug.WriteLine("Screen width: "+System.Windows.SystemParameters.PrimaryScreenWidth);
-			System.Diagnostics.Debug.WriteLine("Screen height: "+System.Windows.SystemParameters.PrimaryScreenHeight);
-			System.Diagnostics.Debug.WriteLine("Client: "+this.RenderSize);
-			this.Left = System.Windows.SystemParameters.PrimaryScreenWidth - this.RenderSize.Width;
-			this.Top = System.Windows.SystemParameters.PrimaryScreenHeight - this.RenderSize.Height - GetTaskbarHeight();
-		}		
+			Allocation();
+		}
 		void Window_MouseLeave(object sender, MouseEventArgs e)
 		{
 			System.Diagnostics.Debug.WriteLine("Window_Leave");
 			if(alreadyFocus) this.Visibility = Visibility.Hidden;
-		}		
+		}
 		void Window_MouseEnter(object sender, MouseEventArgs e)
 		{
 			System.Diagnostics.Debug.WriteLine("Window_MouseEnter");

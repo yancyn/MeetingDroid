@@ -110,6 +110,8 @@ namespace Muje.Calendar
 
 		private IAuthorizationState GetAuthorization(WebServerClient client)
 		{
+			System.Diagnostics.Debug.WriteLine("GetAuthorization(WebServerClient)");
+			
 			// If this user is already authenticated, then just return the auth state.
 			IAuthorizationState state = AuthState;
 			if (state != null)
@@ -133,38 +135,40 @@ namespace Muje.Calendar
 			return null;
 		}
 		/// <summary>
-		/// TODO: Obtain cache session.
+		/// Obtain cache session. You still need to grand access per session.
 		/// </summary>
 		/// <param name="client"></param>
 		/// <returns></returns>
 		private static IAuthorizationState GetAuthorization(NativeApplicationClient client)
-		{
-			// You should use a more secure way of storing the key here as
-			// .NET applications can be disassembled using a reflection tool.
-			const string STORAGE = "google.samples.dotnet.calendars";
-			const string KEY = "x{,erdzf11x9;89";
-			string scope = CalendarService.Scopes.Calendar.GetStringValue();
+        {
+			System.Diagnostics.Debug.WriteLine("GetAuthorization(NativeApplicationClient)");
+			
+            // You should use a more secure way of storing the key here as
+            // .NET applications can be disassembled using a reflection tool.
+            const string STORAGE = "google.samples.dotnet.calendars";
+            const string KEY = "z{,erdzf11x9;91";
+            string scope = CalendarService.Scopes.Calendar.GetStringValue();
 
-			// Check if there is a cached refresh token available.
-			//            IAuthorizationState state = AuthorizationMgr.GetCachedRefreshToken(STORAGE, KEY);
-			//            if (state != null)
-			//            {
-			//                try
-			//                {
-			//                    client.RefreshToken(state);
-			//                    return state; // Yes - we are done.
-			//                }
-			//                catch (DotNetOpenAuth.Messaging.ProtocolException ex)
-			//                {
-			//                    CommandLine.WriteError("Using existing refresh token failed: " + ex.Message);
-			//                }
-			//            }
+            // Check if there is a cached refresh token available.
+            IAuthorizationState state = AuthorizationMgr.GetCachedRefreshToken(STORAGE, KEY);
+            if (state != null)
+            {
+                try
+                {
+                    client.RefreshToken(state);
+                    return state; // Yes - we are done.
+                }
+                catch (DotNetOpenAuth.Messaging.ProtocolException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Using existing refresh token failed: " + ex.Message);
+                }
+            }
 
-			// Retrieve the authorization from the user.
-			IAuthorizationState state = AuthorizationMgr.RequestNativeAuthorization(client, scope);
-			//AuthorizationMgr.SetCachedRefreshToken(STORAGE, KEY, state);
-			return state;
-		}
+            // Retrieve the authorization from the user.
+            state = AuthorizationMgr.RequestNativeAuthorization(client, scope);
+            AuthorizationMgr.SetCachedRefreshToken(STORAGE, KEY, state);
+            return state;
+        }
 		/// <summary>
 		/// Insert into calendar.
 		/// </summary>
