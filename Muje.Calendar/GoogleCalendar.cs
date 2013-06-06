@@ -56,6 +56,9 @@ namespace Muje.Calendar
 				return _state ?? HttpContext.Current.Session["AUTH_STATE"] as IAuthorizationState;
 			}
 		}
+		const string ISO_LONG_DATE_FORMAT = "yyyy-MM-dd h:mmtt";
+		const string ISO_SHORT_DATE_FORMAT = "yyyy-MM-dd";
+		const string ISO_TIME_FORMAT = "h:mmtt";
 		/// <summary>
 		/// Mark as a label synced from Microsoft Outlook 2010.
 		/// </summary>
@@ -221,12 +224,26 @@ namespace Muje.Calendar
 			{
 				// 2013-05-03 9:00AM-10:00AM PHAT Meeting with Ryan at Lync
 				string quickText = string.Empty;
-				quickText += appointment.Start.ToString("yyyy-MM-dd h:mmtt");
-				string to = appointment.End.ToString("h:mmtt");
-				// QuickAdd bug: 12AM is confusing to google console.
-				if (to.Equals("12:00AM")) to = "00:00AM";
-				quickText += "-" + to;
+				string from = appointment.Start.ToString(ISO_LONG_DATE_FORMAT);
+				string to = appointment.End.ToString(ISO_LONG_DATE_FORMAT);
 				
+				// fall in same day
+				if(appointment.End.Subtract(appointment.Start) < new TimeSpan(24,0,0))
+				//if(from.Substring(0, 10).Equals(to.Substring(0, 10)))
+				{
+					to = appointment.End.ToString(ISO_TIME_FORMAT);
+					// QuickAdd bug: 12AM is confusing to google console.
+					if (to.Equals("12:00AM")) to = "00:00AM";
+				}
+				else
+				{
+					// handle full day event
+					from = appointment.Start.ToString(ISO_SHORT_DATE_FORMAT);
+					to = appointment.End.AddDays(-1).ToString(ISO_SHORT_DATE_FORMAT);
+				}
+				
+				quickText += from;
+				quickText += "-" + to;				
 				quickText += " " + trimSubject(appointment.Subject);
 				if (appointment.Location != null && appointment.Location.Length > 0)
 					quickText += " at " + appointment.Location;
@@ -377,14 +394,28 @@ namespace Muje.Calendar
 				{
 					//System.Diagnostics.Debug.WriteLine("Fetching "+id);
 					Event e = service.Events.Get(ClientCredentials.CalendarId,id).Fetch();
-					if(e.Start != null && e.End != null
-					   && e.Start.DateTime != null && e.End.DateTime != null
-					   && e.Start.DateTime.Length >= 10 && e.End.DateTime.Length >= 10) // 25
+					if(e.Start != null && e.End != null)
 					{
-						DateTime eventStart = DateTime.Parse(e.Start.DateTime);
-						DateTime eventEnd = DateTime.Parse(e.End.DateTime);
-						if(eventStart >= start && eventEnd <= end && e.Description.Contains(NOTES))
-							result.Add(e);
+						DateTime eventStart = DateTime.Now;
+						DateTime eventEnd = eventStart;
+						if(e.Start.DateTime != null && e.End.DateTime != null
+						   && e.Start.DateTime.Length >= 10 && e.End.DateTime.Length >= 10) // 25
+						{
+							eventStart = DateTime.Parse(e.Start.DateTime);
+							eventEnd = DateTime.Parse(e.End.DateTime);
+						}
+						else if(e.Start.Date != null && e.End.Date != null)
+						{
+							eventStart = DateTime.Parse(e.Start.Date);
+							eventEnd = DateTime.Parse(e.End.Date);
+						}
+						
+						// include all as long as in between the date range
+						if(e.Description != null && e.Description.Contains(NOTES))
+						{
+							if(eventStart >= start || eventEnd <= end)
+								result.Add(e);
+						}
 					}
 				}
 			}
@@ -457,11 +488,20 @@ namespace Muje.Calendar
 				if(end > -1) subjectOnly = e.Summary.Substring(0, end).Trim();
 				if(e.Summary.Equals(appointmentSubject) || subjectOnly.Equals(appointmentSubject))
 				{
-					if(e.Start != null && e.Start.DateTime.Length >= 10)
+					if(e.Start != null)
 					{
-						DateTime start = DateTime.Parse(e.Start.DateTime);
-						if(start.Equals(appointment.Start))
-							return true;
+						if(e.Start.DateTime != null && e.Start.DateTime.Length >= 10)
+						{
+							DateTime start = DateTime.Parse(e.Start.DateTime);
+							if(start.Equals(appointment.Start))
+								return true;
+						}
+						else if(e.Start.Date != null)
+						{
+							DateTime start = DateTime.Parse(e.Start.Date);
+							if(start.Equals(appointment.Start))
+								return true;
+						}
 					}
 				}
 			}
@@ -478,6 +518,21 @@ namespace Muje.Calendar
 		public bool Contains(Event e, List<Appointment> appointments)
 		{
 			bool found = false;
+			
+			// TODO: Check. ignore earlier event entry since always not found in the provided appointment result here
+			if(e.Start != null)
+			{
+				DateTime start = DateTime.Now;
+				DateTime todayBegin = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+				if(e.Start.DateTime != null)
+					start = DateTime.Parse(e.Start.DateTime);
+				else if(e.Start.Date != null)
+					start = DateTime.Parse(e.Start.Date);
+				if(start.CompareTo(todayBegin) < 0)
+						return true;
+			}
+			
+			
 			foreach(Appointment appointment in appointments)
 			{
 				string appointmentSubject = trimSubject(appointment.Subject.Trim());
@@ -486,11 +541,19 @@ namespace Muje.Calendar
 				if(end > -1) subjectOnly = e.Summary.Substring(0, end).Trim();
 				if(e.Summary.Equals(appointmentSubject) || subjectOnly.Equals(appointmentSubject))
 				{
-					if(e.Start != null && e.Start.DateTime.Length >= 10)
+					if(e.Start != null)
 					{
-						DateTime start = DateTime.Parse(e.Start.DateTime);
-						if(start.Equals(appointment.Start))
-							return true;
+						if(e.Start.DateTime != null && e.Start.DateTime.Length >= 10)
+						{
+							DateTime start = DateTime.Parse(e.Start.DateTime);
+							if(start.Equals(appointment.Start))
+								return true;
+						} else if(e.Start.Date != null)
+						{
+							DateTime start = DateTime.Parse(e.Start.Date);
+							if(start.Equals(appointment.Start))
+								return true;
+						}
 					}
 				}
 			}

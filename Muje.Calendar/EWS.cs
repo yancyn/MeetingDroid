@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Configuration;
 using System.Collections.Generic;
 using System.Text;
 using System.Net;
@@ -103,7 +102,7 @@ namespace Muje.Calendar
 
         public override List<Appointment> GetAppointments(DateTime date)
         {
-        	return GetAppointments(ConfigurationManager.AppSettings["ExchangeEmail"].ToString(),date);
+        	return GetAppointments(base.Email ,date);
         }
         public override List<Appointment> GetAppointments(Room target, DateTime date)
         {

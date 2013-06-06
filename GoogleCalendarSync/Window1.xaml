@@ -26,6 +26,7 @@
 				<WrapPanel Orientation="Vertical" MaxWidth="320">
 					<TextBlock FontWeight="Bold" Text="{Binding Summary}" ToolTip="{Binding Summary}" />
 					<WrapPanel>
+						<!-- TODO: Handle Start.Date and Start.Datetime. Sometimes may null either one. -->
 						<TextBlock Text="{Binding Start.DateTime}" />
 						<TextBlock Text=" - " />
 						<TextBlock Text="{Binding End.DateTime}" />
