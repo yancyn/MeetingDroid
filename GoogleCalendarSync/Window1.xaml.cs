@@ -63,9 +63,14 @@ namespace GoogleCalendarSync
 			System.Windows.Forms.ContextMenuStrip menu = new System.Windows.Forms.ContextMenuStrip();
 			
 			System.Windows.Forms.ToolStripMenuItem m0 = new System.Windows.Forms.ToolStripMenuItem();
-			m0.Text = "Sync";
+			m0.Text = "Sync Calendar";
 			m0.Click += delegate(object sender, EventArgs e) { Sync();Notify(); };
 			menu.Items.Add(m0);
+			
+			System.Windows.Forms.ToolStripMenuItem t = new System.Windows.Forms.ToolStripMenuItem();
+			t.Text = "Sync Task";
+			t.Click += delegate(object sender, EventArgs e) { SyncTask(); };
+			menu.Items.Add(t);
 			
 			System.Windows.Forms.ToolStripMenuItem m1 = new System.Windows.Forms.ToolStripMenuItem();
 			m1.Text = "Setting";
@@ -176,6 +181,23 @@ namespace GoogleCalendarSync
 			for(int i=0;i<appointment.OptionalAttendees.Count;i++)
 				output += appointment.OptionalAttendees[i].Name + ";";
 			System.Diagnostics.Debug.WriteLine(output);
+		}
+		private void SyncTask()
+		{
+			//retrieve task from outlook
+			EWS ews = new EWS{
+				Email=Settings.Default.ExchangeEmail,
+				Password=Settings.Default.ExchangePassword,
+				Domain=Settings.Default.Domain};
+			List<Task> tasks = ews.GetIncompletedTasks();
+			
+			// setup credentials
+			Muje.Calendar.ClientCredentials.ApiKey = Settings.Default.Api;
+			Muje.Calendar.ClientCredentials.CalendarId = Settings.Default.CalendarId;
+			Muje.Calendar.ClientCredentials.ClientID = Settings.Default.ClientID;
+			Muje.Calendar.ClientCredentials.ClientSecret = Settings.Default.ClientSecret;			
+			GoogleCalendar calendar = new GoogleCalendar();
+			calendar.RetrieveTask();
 		}
 		/// <summary>
 		/// Return the height of taskbar when it is at bottom screen.

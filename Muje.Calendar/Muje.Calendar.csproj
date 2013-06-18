@@ -45,6 +45,9 @@
     <Reference Include="Google.Apis.Samples.Helper">
       <HintPath>..\lib\Google.Apis.Samples.Helper.dll</HintPath>
     </Reference>
+    <Reference Include="Google.Apis.Tasks.v1">
+      <HintPath>..\lib\Google.Apis.Tasks.v1.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Exchange.WebServices">
       <HintPath>..\lib\Microsoft.Exchange.WebServices.dll</HintPath>
     </Reference>

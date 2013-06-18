@@ -18,6 +18,8 @@ using System.Web;
 using DotNetOpenAuth.Messaging;
 using DotNetOpenAuth.OAuth2;
 
+using Google.Apis.Tasks.v1;
+using Google.Apis.Tasks.v1.Data;
 using Google.Apis.Authentication;
 using Google.Apis.Authentication.OAuth2;
 using Google.Apis.Authentication.OAuth2.DotNetOpenAuth;
@@ -89,7 +91,7 @@ namespace Muje.Calendar
 		{
 			try
 			{
-				_authenticator = CreateAuthenticator();
+				_authenticator = CreateWebAuthenticator();
 				service = new CalendarService(new BaseClientService.Initializer(){Authenticator = _authenticator});
 				
 				// Check if we received OAuth2 credentials with this request; if yes: parse it.
@@ -101,7 +103,7 @@ namespace Muje.Calendar
 				throw ex;
 			}
 		}
-		private OAuth2Authenticator<WebServerClient> CreateAuthenticator()
+		private OAuth2Authenticator<WebServerClient> CreateWebAuthenticator()
 		{
 			// Register the authenticator.
 			var provider = new WebServerClient(GoogleAuthenticationServer.Description);
@@ -559,6 +561,65 @@ namespace Muje.Calendar
 			}
 			
 			return found;
+		}
+		
+		private static IAuthorizationState GetTaskAuthorization(NativeApplicationClient client)
+        {
+            // You should use a more secure way of storing the key here as
+            // .NET applications can be disassembled using a reflection tool.
+            const string STORAGE = "google.samples.dotnet.tasks";
+            const string KEY = "y},drdzf11x9;87";
+            string scope = TasksService.Scopes.Tasks.GetStringValue();
+
+            // Check if there is a cached refresh token available.
+            IAuthorizationState state = AuthorizationMgr.GetCachedRefreshToken(STORAGE, KEY);
+            if (state != null)
+            {
+                try
+                {
+                    client.RefreshToken(state);
+                    return state; // Yes - we are done.
+                }
+                catch (DotNetOpenAuth.Messaging.ProtocolException ex)
+                {
+                    CommandLine.WriteError("Using existing refresh token failed: " + ex.Message);
+                }
+            }
+
+            // Retrieve the authorization from the user.
+            state = AuthorizationMgr.RequestNativeAuthorization(client, scope);
+            AuthorizationMgr.SetCachedRefreshToken(STORAGE, KEY, state);
+            return state;
+        }
+		private static IAuthenticator CreateTaskAuthenticator()
+		{
+			var provider = new NativeApplicationClient(GoogleAuthenticationServer.Description)
+			{
+				ClientIdentifier = ClientCredentials.ClientID,
+				ClientSecret = ClientCredentials.ClientSecret
+			};
+			
+			return new OAuth2Authenticator<NativeApplicationClient>(provider, GetTaskAuthorization);
+		}
+		public void RetrieveTask()
+		{
+			TasksService tasksService = new TasksService(
+				new BaseClientService.Initializer()
+	            {
+					Authenticator = CreateTaskAuthenticator()
+	            });
+			
+			// TODO: tasksService.Tasks.Insert(task, "Office");
+			foreach(TaskList list in tasksService.Tasklists.List().Fetch().Items)
+			{
+				System.Diagnostics.Debug.WriteLine(list.Title);
+				Tasks tasks = tasksService.Tasks.List(list.Id).Fetch();
+				foreach(Google.Apis.Tasks.v1.Data.Task task in tasks.Items)
+				{
+					System.Diagnostics.Debug.WriteLine("\t"+task.Title);
+				}
+				
+			}
 		}
 	}
 }

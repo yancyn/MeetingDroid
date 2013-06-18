@@ -190,6 +190,25 @@ namespace Muje.Calendar.Test
         	Assert.AreEqual(5,actual);
         }
         
+        private void PrintTask(Task task)
+        {
+        	//Fails: task.Body. Must load service first
+        	System.Diagnostics.Debug.WriteLine(
+        		String.Format("[{0}]:({1}):{2}",
+        		              task.Status,
+        		              task.DueDate,
+        		              task.Subject));
+        }
+        [Test]
+        public void GetIncompletedTasksTest()
+        {
+        	List<Task> result = target.GetIncompletedTasks();
+        	foreach(Task task in result)
+        		PrintTask(task);
+        	int actual = result.Count;
+        	System.Diagnostics.Debug.WriteLine(actual);
+        	Assert.AreNotEqual(0, actual);
+        }
         
         
         

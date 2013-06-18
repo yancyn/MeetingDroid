@@ -120,5 +120,28 @@ namespace Muje.Calendar
         {
             throw new NotImplementedException();
         }
+        
+        /// <summary>
+        /// Return collection of task in Outlook.
+        /// </summary>
+        /// <returns></returns>
+        /// <seealso cref="http://msdn.microsoft.com/en-us/library/dd634322">Task class</seealso>
+        /// <seealso cref="http://stackoverflow.com/questions/9823489/ews-how-do-i-find-all-incomplete-tasks">Retrieve incompleted task from EWS</seealso>
+        public List<Task> GetIncompletedTasks()
+        {
+        	List<Task> output = new List<Task>();
+        	
+        	ExchangeService service = CreateService(base.Email, base.Password, base.Domain);
+        	//Create the extended property definition.
+			ExtendedPropertyDefinition taskCompleteProp = new ExtendedPropertyDefinition(DefaultExtendedPropertySet.Task, 0x0000811C, MapiPropertyType.Boolean);
+			//Create the search incomplete filter.
+			SearchFilter.IsEqualTo filter = new SearchFilter.IsEqualTo(taskCompleteProp, false);
+			//Get the tasks.
+			FindItemsResults<Item> tasks = service.FindItems(WellKnownFolderName.Tasks, filter, new ItemView(200));
+			foreach(Task item in tasks.Items)
+				output.Add(item);
+			
+			return output;        	
+        }
     }
 }
