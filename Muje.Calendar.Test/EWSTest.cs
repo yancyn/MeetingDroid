@@ -22,11 +22,12 @@ namespace Muje.Calendar.Test
     	private static string domain = "";
     	
     	private EWS target;
+    	private ExchangeService service;
     	
     	private void PrintAppointment(Appointment appointment)
 		{			
 			string output = string.Empty;
-			output += appointment.Id.ToString() + "\t";//ChangeKey //UniqueId
+			//output += appointment.Id.ToString() + "\t";//ChangeKey //UniqueId
 			output += appointment.Subject;
 			output += "["+appointment.Location+"]";
 			//output += "("+appointment.Start.ToString("yyyy-MM-ddTHH:mmzzz")+")";
@@ -43,6 +44,7 @@ namespace Muje.Calendar.Test
     	public void Initialize()
     	{
     		target = new EWS{Email=email, Password=password, Domain=domain};
+    		service = CreateService(email, password, domain);
     	}
     	
         /// <summary>
@@ -100,7 +102,7 @@ namespace Muje.Calendar.Test
         public void GetMyAppointmentsTest()
         {
         	// Expected today has meeting at least
-            Assert.AreNotEqual(0, target.GetAppointments(DateTime.Now).Count);
+            Assert.AreNotEqual(0, target.GetTodayAppointments(DateTime.Now).Count);
         }
         /// <summary>
         /// List out all my appointment for one month from now.
@@ -131,7 +133,7 @@ namespace Muje.Calendar.Test
         [Test]
         public void GetAppointmentsAtAustraliaRoomTest()
         {
-        	List<Appointment> result = target.GetAppointments(new Room{Email="atc_australia@plexus.com"},DateTime.Now);
+        	List<Appointment> result = target.GetTodayAppointments(new Room{Email="atc_australia@plexus.com"},DateTime.Now);
         	foreach(Appointment appointment in result)
         		PrintAppointment(appointment);
         	int actual = result.Count;
@@ -140,7 +142,7 @@ namespace Muje.Calendar.Test
         [Test]
         public void GetAppointmentsAtPorscheRoomTest()
         {
-        	List<Appointment> result = target.GetAppointments(new Room{Email="confrmatctg_porsche@exchange.plexus.com"},new DateTime(2012, 10, 1));
+        	List<Appointment> result = target.GetTodayAppointments(new Room{Email="confrmatctg_porsche@exchange.plexus.com"},new DateTime(2012, 10, 1));
         	foreach(Appointment appointment in result)
         		PrintAppointment(appointment);
         	int actual = result.Count;
@@ -153,7 +155,7 @@ namespace Muje.Calendar.Test
         [Test]
         public void GetAppointmentsAtNewZealandTest()
         {
-        	List<Appointment> result = target.GetAppointments(new Room{Email="atc_newzealand@plexus.com"},DateTime.Now);
+        	List<Appointment> result = target.GetTodayAppointments(new Room{Email="atc_newzealand@plexus.com"},DateTime.Now);
         	foreach(Appointment appointment in result)
         		PrintAppointment(appointment);
         	int actual = result.Count;
@@ -162,7 +164,7 @@ namespace Muje.Calendar.Test
         [Test]
         public void GetAppointmentsAtPhilippinesRoomTest()
         {
-        	List<Appointment> result = target.GetAppointments(new Room{Email="atc_philippines@plexus.com"},DateTime.Now);
+        	List<Appointment> result = target.GetTodayAppointments(new Room{Email="atc_philippines@plexus.com"},DateTime.Now);
         	foreach(Appointment appointment in result)
         		PrintAppointment(appointment);
         	int actual = result.Count;
@@ -174,7 +176,7 @@ namespace Muje.Calendar.Test
         [Test]
         public void GetAppointmentsAtDongtingLakeTest()
         {        	
-        	List<Appointment> result = target.GetAppointments(new Room{Email="hz_dongtinglake@plexus.com"},DateTime.Now);
+        	List<Appointment> result = target.GetTodayAppointments(new Room{Email="hz_dongtinglake@plexus.com"},DateTime.Now);
         	foreach(Appointment appointment in result)
         		PrintAppointment(appointment);
         	int actual = result.Count;
@@ -183,7 +185,7 @@ namespace Muje.Calendar.Test
         [Test]
         public void GetAppointmentsAtJapanTest()
         {
-        	List<Appointment> result = target.GetAppointments(new Room{Email="atc_japan@plexus.com"},new DateTime(2013,4,24));
+        	List<Appointment> result = target.GetTodayAppointments(new Room{Email="atc_japan@plexus.com"},new DateTime(2013,4,24));
         	foreach(Appointment appointment in result)
         		PrintAppointment(appointment);
         	int actual = result.Count;
@@ -210,57 +212,47 @@ namespace Muje.Calendar.Test
         	Assert.AreNotEqual(0, actual);
         }
         
-        
-        
-        // NOT TESTED
-        [Test]
-        public void GetRoomListTest()
+        private void GetRooms(string prefix, string email)
         {
-            ExchangeService service = CreateService(email,password,domain);
-
-            int actual = 0;
-            //            System.Diagnostics.Debug.WriteLine("start get room list");
-            //            EmailAddressCollection collection = service.GetRoomLists();
-            //            foreach(EmailAddress address in collection)
-            //            {
-            //            	System.Diagnostics.Debug.WriteLine(address.Address);
-            //            	actual++;
-            //            }
-
-            //"ap.beta@plexus.com"
-            //ConfRm.GHQPyrenees@plexus.com"
-            EmailAddress target = new EmailAddress("atc_australia@plexus.com");
-            foreach (EmailAddress address in service.GetRooms(target))
-            {
-                System.Diagnostics.Debug.WriteLine(address.Address);
-                actual++;
-            }
-
-            //            //foreach (EmailAddress address in service.GetRoomLists())
-            //            foreach (EmailAddress address in service.GetRooms(new EmailAddress("atc_australia@plexus.com")))
-            //            {
-            //                System.Diagnostics.Debug.WriteLine(address.Name + ": " + address.Address);
-            //                count++;
-            //            }
-
-            Assert.AreNotEqual(0, actual);
+        	EmailAddress emailAddress = new EmailAddress(email);
+        	foreach(EmailAddress address in service.GetRooms(emailAddress))
+        	{
+        		Console.WriteLine("{0}{1} - Email Address: {2} Mailbox Type: {3}",
+        		                  prefix, address.Name,  address.Address, address.MailboxType);
+        		if(address.MailboxType == MailboxType.PublicGroup)
+        			GetRooms(prefix+"\t",address.Address);
+        		if(address.MailboxType == MailboxType.Mailbox)
+                	GetAppointments(address.Address);
+        	}
         }
-
+        private void GetAppointments(string email)
+        {
+        	List<Appointment> actual = target.GetTodayAppointments(new Room{Email = email}, DateTime.Now);
+        	foreach(Appointment appointment in actual)
+        		PrintAppointment(appointment);
+        }
         [Test]
         public void GetAllRoomListTest()
         {
-            ExchangeService service = CreateService(email,password,domain);
+        	System.Diagnostics.Debug.WriteLine(DateTime.Now);
             EmailAddressCollection myRoomLists = service.GetRoomLists();
             int count = 0;
             foreach (EmailAddress address in myRoomLists)
             {
                 count++;
-                Console.WriteLine("Email Address: {0} Mailbox Type: {1}", address.Address, address.MailboxType);
+                Console.WriteLine("{0} - Email Address: {1} Mailbox Type: {2}", address.Name,  address.Address, address.MailboxType);
+                if(address.MailboxType == MailboxType.PublicGroup)
+                	GetRooms("\t", address.Address);
+                if(address.MailboxType == MailboxType.Mailbox)
+                	GetAppointments(address.Address);
             }
-
+            
+            System.Diagnostics.Debug.WriteLine(DateTime.Now);
             Assert.AreNotEqual(0, count);
         }
-
+        
+        
+        // NOT TESTED
         [Test]
         public void GetAppointmentsByFolderIdTest()
         {
