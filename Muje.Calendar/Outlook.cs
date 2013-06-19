@@ -14,12 +14,12 @@ namespace Muje.Calendar
         {
         }
         //TODO: GetAppointments
-        public override List<Appointment> GetAppointments(Room target, DateTime date)
+        public override List<Appointment> GetTodayAppointments(Room target, DateTime date)
         {
             System.Diagnostics.Debug.WriteLine("Outlook.GetAppointments");
             throw new NotImplementedException();
         }
-        public override List<Appointment> GetAppointments(DateTime date)
+        public override List<Appointment> GetTodayAppointments(DateTime date)
         {
             throw new NotImplementedException();
         }

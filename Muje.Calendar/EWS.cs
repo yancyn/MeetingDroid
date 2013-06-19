@@ -16,6 +16,7 @@ namespace Muje.Calendar
     /// </summary>
     public class EWS: CalendarBase
     {
+    	private static ExchangeService service;
         public EWS()
         {
         }
@@ -66,7 +67,7 @@ namespace Muje.Calendar
         /// <param name="email"></param>
         /// <param name="date"></param>
         /// <returns></returns>
-        private List<Appointment> GetAppointments(string email, DateTime date)
+        private List<Appointment> GetTodayAppointments(string email, DateTime date)
         {        	
             DateTime start = new DateTime(date.Year, date.Month,date.Day);
             DateTime end = start.AddDays(1).Subtract(new TimeSpan(1));
@@ -83,7 +84,7 @@ namespace Muje.Calendar
         {        	
         	List<Appointment> output = new List<Appointment>();
         	
-        	ExchangeService service = CreateService(base.Email,base.Password,base.Domain);            
+        	if(service == null) service = CreateService(base.Email,base.Password,base.Domain);            
             CalendarView calendarView = new CalendarView(start, end);
             Mailbox mailbox = new Mailbox(email);
             FolderId calendarFolder = new FolderId(WellKnownFolderName.Calendar,mailbox);
@@ -100,13 +101,13 @@ namespace Muje.Calendar
             return output;
         }
 
-        public override List<Appointment> GetAppointments(DateTime date)
+        public override List<Appointment> GetTodayAppointments(DateTime date)
         {
-        	return GetAppointments(base.Email ,date);
+        	return GetTodayAppointments(base.Email ,date);
         }
-        public override List<Appointment> GetAppointments(Room target, DateTime date)
+        public override List<Appointment> GetTodayAppointments(Room target, DateTime date)
         {
-        	return GetAppointments(target.Email,date);
+        	return GetTodayAppointments(target.Email, date);
         }
         public override bool AddAppointment(Appointment appointment)
         {
@@ -131,7 +132,7 @@ namespace Muje.Calendar
         {
         	List<Task> output = new List<Task>();
         	
-        	ExchangeService service = CreateService(base.Email, base.Password, base.Domain);
+        	if(service == null) service = CreateService(base.Email, base.Password, base.Domain);
         	//Create the extended property definition.
 			ExtendedPropertyDefinition taskCompleteProp = new ExtendedPropertyDefinition(DefaultExtendedPropertySet.Task, 0x0000811C, MapiPropertyType.Boolean);
 			//Create the search incomplete filter.

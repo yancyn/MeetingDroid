@@ -27,13 +27,13 @@ namespace Muje.Calendar
                     break;
             }
         }
-        public override List<Appointment> GetAppointments(DateTime date)
+        public override List<Appointment> GetTodayAppointments(DateTime date)
         {
-            return calendar.GetAppointments(date);
+            return calendar.GetTodayAppointments(date);
         }
-        public override List<Appointment> GetAppointments(Room target, DateTime date)
+        public override List<Appointment> GetTodayAppointments(Room target, DateTime date)
         {
-            return calendar.GetAppointments(target, date);
+            return calendar.GetTodayAppointments(target, date);
         }
         public override bool AddAppointment(Appointment appointment)
         {
