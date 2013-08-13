@@ -62,6 +62,13 @@ namespace Muje.Calendar.Test
 			Assert.AreEqual(expected, actual);
 		}
 		[Test]
+		public void ConvertDateToEventDateStringTest()
+		{
+			DateTime target = DateTime.Now;
+			System.Diagnostics.Debug.WriteLine(target.ToString("O"));
+			//System.Diagnostics.Debug.WriteLine(target.ToUniversalTime().ToString());
+		}
+		[Test]
 		public void DateTimeFormatTest()
 		{
 			DateTime source = new DateTime(2013,5,3,9,30,0);

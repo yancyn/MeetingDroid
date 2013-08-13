@@ -64,7 +64,7 @@ namespace GoogleCalendarSync
 			
 			System.Windows.Forms.ToolStripMenuItem m0 = new System.Windows.Forms.ToolStripMenuItem();
 			m0.Text = "Sync Calendar";
-			m0.Click += delegate(object sender, EventArgs e) { Sync();Notify(); };
+			m0.Click += delegate(object sender, EventArgs e) { SyncCalendar();Notify(); };
 			menu.Items.Add(m0);
 			
 			System.Windows.Forms.ToolStripMenuItem t = new System.Windows.Forms.ToolStripMenuItem();
@@ -88,25 +88,33 @@ namespace GoogleCalendarSync
 		{
 			List<Event> events = new List<Event>();
 			
-			GoogleCalendar calendar = new GoogleCalendar();
-			calendar.Login();
-			List<Event> existing = calendar.Retrieve(DateTime.Now, DateTime.Now.AddDays(30));
+			// setup credentials
+			Muje.Calendar.ClientCredentials.ApiKey = Settings.Default.Api;
+			Muje.Calendar.ClientCredentials.CalendarId = Settings.Default.CalendarId;
+			Muje.Calendar.ClientCredentials.ClientID = Settings.Default.ClientID;
+			Muje.Calendar.ClientCredentials.ClientSecret = Settings.Default.ClientSecret;
 			
-			int stopper = 0;
-			foreach(Event i in existing)
-			{
-				if(stopper == 5) break;
-				events.Add(i);
-				stopper ++;
-			}
+			GoogleCalendar calendar = new GoogleCalendar();
+			calendar.FeedUrl = Settings.Default.FeedUrl;
+			calendar.Login();
+			
+//			List<Event> existing = calendar.Retrieve(DateTime.Now, DateTime.Now.AddDays(30));			
+//			int stopper = 0;
+//			foreach(Event i in existing)
+//			{
+//				if(stopper == 5) break;
+//				events.Add(i);
+//				stopper ++;
+//			}
+			
 			
 			// set newly added event into notification area
-			EventLists.ItemsSource = events;
+			EventLists.ItemsSource = calendar.Retrieve(DateTime.Now, DateTime.Now.AddDays(7));
 		}
 		/// <summary>
-		/// Sync action.
+		/// Sync calendar action.
 		/// </summary>
-		private void Sync()
+		private void SyncCalendar()
 		{
 			/**
 			 * 1. Retrieve 30 days appointments from Outlook. Starting from DateTime.Now. Ignore pass appointment.
@@ -133,15 +141,14 @@ namespace GoogleCalendarSync
 			GoogleCalendar calendar = new GoogleCalendar();
 			calendar.FeedUrl = Settings.Default.FeedUrl;
 			calendar.Login();
-			List<Event> existing = calendar.Retrieve(DateTime.Now, DateTime.Now.AddDays(Settings.Default.PeriodDays));
+			IList<Event> existing = calendar.Retrieve(DateTime.Now, DateTime.Now.AddDays(Settings.Default.PeriodDays));
+//			foreach(Event e in existing)
+//				System.Diagnostics.Debug.WriteLine(e.Summary + " at " +e.Start.Date + " " +e.Start.DateTime);
 			
 			foreach(Appointment appointment in appointments)
 			{
 				if(!calendar.Contains(appointment, existing))
-				{
-					//PrintAppointment(appointment);
 					events.Add(calendar.Insert(appointment));
-				}
 			}
 			
 			// Assuming retrieve those only sync to Google Calendar previously
@@ -224,7 +231,7 @@ namespace GoogleCalendarSync
 		{
 			System.Diagnostics.Debug.WriteLine("window1_Inititialized");
 			
-			timer.Tick += delegate { Sync(); };
+			timer.Tick += delegate { SyncCalendar(); };
 			timer.Interval = new TimeSpan(0,Settings.Default.Interval*60,0);
 			timer.Start();
 		}

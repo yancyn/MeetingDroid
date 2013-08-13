@@ -304,131 +304,106 @@ namespace Muje.Calendar
 			System.Diagnostics.Debug.WriteLine("Event '"+e.Summary+"' deleted.");
 		}
 		/// <summary>
-		/// Retrieve event between a period of time.
+		/// Filter events within a certain period.
 		/// </summary>
-		/// <param name="start"></param>
-		/// <param name="end"></param>
-		/// <seealso cref="">http://stackoverflow.com/questions/8537681/google-api-v3-for-dotnet-using-the-calendar-with-an-api-key</seealso>
+		/// <seealso cref="https://developers.google.com/google-apps/calendar/v3/reference/events/list"></seealso>
+		/// <param name="from"></param>
+		/// <param name="to"></param>
 		/// <returns></returns>
-		/*public List<Event> Retrieve(DateTime start, DateTime end)
-        {
-        	try
-        	{
-	        	List<Event> result = new List<Event>();
-				foreach(Event i in service.Events.List(ClientCredentials.CalendarId).Fetch().Items)
-				{
-					//i.Location, i.Start.DateTime, i.End, i.Attendees
-					System.Diagnostics.Debug.WriteLine(i.Summary);
-					// this checking will reduce the number for result like whole day event
-					// ie. "2013-05-03T09:00:00+8:00";
-					if(i.Start != null && i.End != null
-					   && i.Start.DateTime != null && i.End.DateTime != null
-					   && i.Start.DateTime.Length == 25 && i.End.DateTime.Length == 25)
-					{
-						DateTime eventStart = DateTime.Parse(i.Start.DateTime);
-						DateTime eventEnd = DateTime.Parse(i.End.DateTime);
-						if(eventStart >= start && eventEnd <= end)
-						{
-							//System.Diagnostics.Debug.WriteLine(i.Summary);
-							result.Add(i);
-						}
-					}
-				}
-	        	
-	        	return result;
-        	}
-        	catch(Exception ex)
-        	{
-        		System.Diagnostics.Debug.WriteLine(ex);
-        		throw ex;
-        	}
-        } */
+		public IList<Event> Retrieve(DateTime from, DateTime to)
+		{
+			//2012-08-12T00:00:00+08:00
+			Google.Apis.Calendar.v3.EventsResource.ListRequest req = service.Events.List(ClientCredentials.CalendarId);
+			req.TimeMin = from.ToString("O");// "2013-08-12T00:00:00+08:00";
+			req.TimeMax = to.ToString("O");//"2013-08-19T00:00:00+08:00";
+			return req.Fetch().Items;
+		}
 		
 		/// <summary>
-		/// HACK: Extract from feed instead of real api then only retrieve one by one from Google api.
+		/// Obsolete: Extract from feed instead of real api then only retrieve one by one from Google api.
 		/// </summary>
 		/// <param name="start"></param>
 		/// <param name="end"></param>
 		/// <returns></returns>
-		public List<Event> Retrieve(DateTime start, DateTime end)
-		{
-			
-			/**
-			 * 1. Retrieve calendar atom.
-			 * 2. Extract id value.
-			 * 3. service.Events.Get(ClientCredentials.CalendarId,id).Fetch();
-			 */
-			
-			List<Event> result = new List<Event>();
-			
-			try
-			{
-				
-				// TODO: Use https://www.google.com/calendar/feeds/your@email.com/private/full need authorize.
-				if(feedKey == null)
-				{
-					string[] segments = this.FeedUrl.Split(new char[]{'/'});
-					if(segments.Length>0) feedKey = segments[segments.Length-1];
-				}
-				
-				List<string> ids = new List<string>();
-				HttpWebRequest request = (HttpWebRequest)WebRequest.Create(this.FeedUrl);
-				using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-				{
-					using (StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8))
-					{
-						//grab order require to validate only
-						string line = string.Empty;
-						while ((line = reader.ReadLine()) != null)
-						{
-							//System.Diagnostics.Debug.WriteLine(line);
-							//html += line;
-							List<string> extracts;
-							ExtractId(line, out extracts);
-							foreach(string id in extracts)
-								ids.Add(id);
-						}
-					}
-				}
-				
-				// Retrieve one by one from Google Calendar
-				foreach(string id in ids)
-				{
-					//System.Diagnostics.Debug.WriteLine("Fetching "+id);
-					Event e = service.Events.Get(ClientCredentials.CalendarId,id).Fetch();
-					if(e.Start != null && e.End != null)
-					{
-						DateTime eventStart = DateTime.Now;
-						DateTime eventEnd = eventStart;
-						if(e.Start.DateTime != null && e.End.DateTime != null
-						   && e.Start.DateTime.Length >= 10 && e.End.DateTime.Length >= 10) // 25
-						{
-							eventStart = DateTime.Parse(e.Start.DateTime);
-							eventEnd = DateTime.Parse(e.End.DateTime);
-						}
-						else if(e.Start.Date != null && e.End.Date != null)
-						{
-							eventStart = DateTime.Parse(e.Start.Date);
-							eventEnd = DateTime.Parse(e.End.Date);
-						}
-						
-						// include all as long as in between the date range
-						if(e.Description != null && e.Description.Contains(NOTES))
-						{
-							if(eventStart >= start || eventEnd <= end)
-								result.Add(e);
-						}
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				System.Diagnostics.Debug.WriteLine(ex);
-				throw ex;
-			}
-			
-			return result;
-		}
+//		public List<Event> Retrieve(DateTime start, DateTime end)
+//		{
+//			
+//			/**
+//			 * 1. Retrieve calendar atom.
+//			 * 2. Extract id value.
+//			 * 3. service.Events.Get(ClientCredentials.CalendarId,id).Fetch();
+//			 */
+//			
+//			List<Event> result = new List<Event>();
+//			
+//			try
+//			{
+//				
+//				// TODO: Use https://www.google.com/calendar/feeds/your@email.com/private/full need authorize.
+//				if(feedKey == null)
+//				{
+//					string[] segments = this.FeedUrl.Split(new char[]{'/'});
+//					if(segments.Length>0) feedKey = segments[segments.Length-1];
+//				}
+//				
+//				List<string> ids = new List<string>();
+//				HttpWebRequest request = (HttpWebRequest)WebRequest.Create(this.FeedUrl);
+//				using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+//				{
+//					using (StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8))
+//					{
+//						//grab order require to validate only
+//						string line = string.Empty;
+//						while ((line = reader.ReadLine()) != null)
+//						{
+//							//System.Diagnostics.Debug.WriteLine(line);
+//							//html += line;
+//							List<string> extracts;
+//							ExtractId(line, out extracts);
+//							foreach(string id in extracts)
+//								ids.Add(id);
+//						}
+//					}
+//				}
+//				
+//				// Retrieve one by one from Google Calendar
+//				foreach(string id in ids)
+//				{
+//					//System.Diagnostics.Debug.WriteLine("Fetching "+id);
+//					Event e = service.Events.Get(ClientCredentials.CalendarId,id).Fetch();
+//					if(e.Start != null && e.End != null)
+//					{
+//						DateTime eventStart = DateTime.Now;
+//						DateTime eventEnd = eventStart;
+//						if(e.Start.DateTime != null && e.End.DateTime != null
+//						   && e.Start.DateTime.Length >= 10 && e.End.DateTime.Length >= 10) // 25
+//						{
+//							eventStart = DateTime.Parse(e.Start.DateTime);
+//							eventEnd = DateTime.Parse(e.End.DateTime);
+//						}
+//						else if(e.Start.Date != null && e.End.Date != null)
+//						{
+//							eventStart = DateTime.Parse(e.Start.Date);
+//							eventEnd = DateTime.Parse(e.End.Date);
+//						}
+//						
+//						// include all as long as in between the date range
+//						if(e.Description != null && e.Description.Contains(NOTES))
+//						{
+//							if(eventStart >= start || eventEnd <= end)
+//								result.Add(e);
+//						}
+//					}
+//				}
+//			}
+//			catch (Exception ex)
+//			{
+//				System.Diagnostics.Debug.WriteLine(ex);
+//				throw ex;
+//			}
+//			
+//			return result;
+//		}
 		private string ExtractId(string source)
 		{
 			string id = null;
@@ -479,7 +454,7 @@ namespace Muje.Calendar
 		/// <param name="appointment"></param>
 		/// <param name="events"></param>
 		/// <returns></returns>
-		public bool Contains(Appointment appointment, List<Event> events)
+		public bool Contains(Appointment appointment, IList<Event> events)
 		{
 			// trim Outlook's appointment like the way insert into Google Calendar.
 			string appointmentSubject = trimSubject(appointment.Subject.Trim());
@@ -488,7 +463,7 @@ namespace Muje.Calendar
 				string subjectOnly = string.Empty;
 				int end = e.Summary.IndexOf("at");
 				if(end > -1) subjectOnly = e.Summary.Substring(0, end).Trim();
-				if(e.Summary.Equals(appointmentSubject) || subjectOnly.Equals(appointmentSubject))
+				if(e.Summary == appointmentSubject || subjectOnly == appointmentSubject)
 				{
 					if(e.Start != null)
 					{
@@ -496,19 +471,49 @@ namespace Muje.Calendar
 						{
 							DateTime start = DateTime.Parse(e.Start.DateTime);
 							if(start.Equals(appointment.Start))
+							{
+								Print(appointment, e);
 								return true;
+							}
 						}
 						else if(e.Start.Date != null)
 						{
 							DateTime start = DateTime.Parse(e.Start.Date);
 							if(start.Equals(appointment.Start))
+							{
+								Print(appointment, e);
 								return true;
+							}
 						}
 					}
 				}
 			}
 			
+			Print(appointment);
 			return false;
+		}
+		private void Print(Appointment appointment, Event e)
+		{
+			System.Diagnostics.Debug.Write(appointment.Subject + ": "+appointment.Start);			
+			System.Diagnostics.Debug.Write(" contains ");
+			System.Diagnostics.Debug.WriteLine(e.Summary + ": " + e.Start.Date + " " +e.Start.DateTime);
+		}
+		private void Print(Appointment appointment)
+		{
+			System.Diagnostics.Debug.Write(appointment.Subject + ": "+appointment.Start);			
+			System.Diagnostics.Debug.WriteLine(" NOT exist in Google Calendar");
+		}
+		
+		private void Print(Event e, Appointment appointment)
+		{
+			System.Diagnostics.Debug.Write(e.Summary + ": " + e.Start.Date + " " +e.Start.DateTime);
+			System.Diagnostics.Debug.Write(" contains ");
+			System.Diagnostics.Debug.WriteLine(appointment.Subject + ": "+appointment.Start);			
+		}
+		private void Print(Event e)
+		{
+			System.Diagnostics.Debug.Write(e.Summary + ": "+ e.Start.Date + " " +e.Start.DateTime);
+			System.Diagnostics.Debug.WriteLine(" NOT exist in Outlook");
 		}
 		/// <summary>
 		/// Determine Google Calendar exist in the latest appointment result from EWS query.
@@ -541,7 +546,7 @@ namespace Muje.Calendar
 				string subjectOnly = string.Empty;
 				int end = e.Summary.IndexOf("at");
 				if(end > -1) subjectOnly = e.Summary.Substring(0, end).Trim();
-				if(e.Summary.Equals(appointmentSubject) || subjectOnly.Equals(appointmentSubject))
+				if(e.Summary == appointmentSubject || subjectOnly == appointmentSubject)
 				{
 					if(e.Start != null)
 					{
@@ -549,17 +554,24 @@ namespace Muje.Calendar
 						{
 							DateTime start = DateTime.Parse(e.Start.DateTime);
 							if(start.Equals(appointment.Start))
+							{
+								Print(e, appointment);
 								return true;
+							}
 						} else if(e.Start.Date != null)
 						{
 							DateTime start = DateTime.Parse(e.Start.Date);
 							if(start.Equals(appointment.Start))
+							{
+								Print(e, appointment);
 								return true;
+							}
 						}
 					}
 				}
 			}
 			
+			Print(e);
 			return found;
 		}
 		
