@@ -83,9 +83,11 @@ namespace Muje.Calendar
         public List<Appointment> GetAppointments(string email, DateTime start, DateTime end)
         {        	
         	List<Appointment> output = new List<Appointment>();
+        	List<Item> copies = new List<Item>();
         	
-        	if(service == null) service = CreateService(base.Email,base.Password,base.Domain);            
+        	if(service == null) service = CreateService(base.Email,base.Password,base.Domain);
             CalendarView calendarView = new CalendarView(start, end);
+            //calendarView.PropertySet.Add(AppointmentSchema.Body);
             Mailbox mailbox = new Mailbox(email);
             FolderId calendarFolder = new FolderId(WellKnownFolderName.Calendar,mailbox);
             
@@ -94,9 +96,14 @@ namespace Muje.Calendar
             foreach(Appointment appointment in result)
             {
             	if(!appointment.IsCancelled)
+            	{
             		output.Add(appointment);
+            		copies.Add(appointment);
+            	}
                 //System.Diagnostics.Debug.WriteLine(string.Format("{0}({1}-{2})", appointment.Subject, appointment.Start, appointment.End.ToShortTimeString()));
             }
+            
+            service.LoadPropertiesForItems(copies, PropertySet.FirstClassProperties);
             
             return output;
         }

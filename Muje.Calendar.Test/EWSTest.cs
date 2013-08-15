@@ -37,6 +37,7 @@ namespace Muje.Calendar.Test
 				output += appointment.RequiredAttendees[i].Name + ";";
 			for(int i=0;i<appointment.OptionalAttendees.Count;i++)
 				output += appointment.OptionalAttendees[i].Name + ";";
+			if(appointment.Body != null) output += appointment.Body.Text;
 			System.Diagnostics.Debug.WriteLine(output);
 		}
     	
@@ -102,7 +103,10 @@ namespace Muje.Calendar.Test
         public void GetMyAppointmentsTest()
         {
         	// Expected today has meeting at least
-            Assert.AreNotEqual(0, target.GetTodayAppointments(DateTime.Now).Count);
+        	List<Appointment> actual = target.GetTodayAppointments(DateTime.Now);
+        	foreach(Appointment appointment in actual)
+        		PrintAppointment(appointment);
+            Assert.AreNotEqual(0, actual.Count);
         }
         /// <summary>
         /// List out all my appointment for one month from now.

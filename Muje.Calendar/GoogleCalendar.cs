@@ -64,7 +64,7 @@ namespace Muje.Calendar
 		/// <summary>
 		/// Mark as a label synced from Microsoft Outlook 2010.
 		/// </summary>
-		const string NOTES = "Synced from EWS.";
+		const string NOTES = "[Synced from EWS]";
 		
 		public GoogleCalendar()
 		{
@@ -254,8 +254,11 @@ namespace Muje.Calendar
 				System.Diagnostics.Debug.WriteLine(quickText);
 				Event created = service.Events.QuickAdd(ClientCredentials.CalendarId, quickText).Fetch();
 				
+				// TODO: Wrap html to text
+				created.Description += appointment.Body;
+				
 				// Mark as sync from Microsoft Outlook
-				created.Description += NOTES;
+				created.Description += "\n\n" + NOTES;
 				service.Events.Update(created, ClientCredentials.CalendarId, created.Id).Fetch();
 				return created;
 			}
@@ -525,6 +528,15 @@ namespace Muje.Calendar
 		public bool Contains(Event e, List<Appointment> appointments)
 		{
 			bool found = false;
+			
+			// ignore those not sync from outlook
+			// return true for not remove from Google Calendar in this case
+			if(e.Description == null)
+			{
+				return true;
+				if(!e.Description.Contains(NOTES))
+					return true;
+			}
 			
 			// TODO: Check. ignore earlier event entry since always not found in the provided appointment result here
 			if(e.Start != null)
