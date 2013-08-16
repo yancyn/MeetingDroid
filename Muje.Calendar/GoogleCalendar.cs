@@ -254,8 +254,8 @@ namespace Muje.Calendar
 				System.Diagnostics.Debug.WriteLine(quickText);
 				Event created = service.Events.QuickAdd(ClientCredentials.CalendarId, quickText).Fetch();
 				
-				// TODO: Wrap html to text
-				created.Description += appointment.Body;
+				// Wrap html to text
+				created.Description += WrapHtmlToText(appointment.Body);
 				
 				// Mark as sync from Microsoft Outlook
 				created.Description += "\n\n" + NOTES;
@@ -585,6 +585,25 @@ namespace Muje.Calendar
 			
 			Print(e);
 			return found;
+		}
+		/// <summary>
+		/// Wrap html source to pure text as Google Calendar description.
+		/// </summary>
+		/// <param name="html"></param>
+		/// <returns></returns>
+		private string WrapHtmlToText(string html)
+		{
+			string output = string.Empty;
+			//html = html.Replace("<div>&nbsp;</div>","\n");
+			Regex regex = new Regex("(?<=^|>)[^><]+?(?=<|$)");
+			foreach(Match match in regex.Matches(html))
+			{
+				output += match.Groups[0].Value;
+				output += "\n";
+			}
+			
+			output = output.Replace("&nbsp;", " ");
+			return output;
 		}
 		
 		private static IAuthorizationState GetTaskAuthorization(NativeApplicationClient client)

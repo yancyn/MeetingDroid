@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.IO;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 using DotNetOpenAuth.OAuth2;
 using Google.Apis.Authentication;
@@ -184,6 +185,42 @@ namespace Muje.Calendar.Test
 			string expected = "Engineering Solutions Staff Meeting (KT Lau x2282)";
 			string actual = calendar.trimSubject(source);
 			Assert.AreEqual(expected, actual);			
+		}
+		
+		[Test]
+		public void WrapHtmlBodyTest()
+		{
+			string source = "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><meta name=\"Generator\" content=\"Microsoft Exchange Server\"><!-- converted from rtf --><style><!-- .EmailQuote { margin-left: 1pt; padding-left: 4pt; border-left: #800000 2px solid; } --></style></head><body><font face=\"Calibri\" size=\"2\"><span style=\"font-size:11pt;\"><div>1.&nbsp; Please join my meeting.</div><div><a href=\"https://global.gotomeeting.com/join/841925869\"><font color=\"blue\"><u>https://global.gotomeeting.com/join/841925869</u></font></a></div><div>&nbsp;</div><div>2.&nbsp; You will be connected to audio using your computer's microphone and speakers (VoIP).&nbsp; A headset is recommended.</div><div>&nbsp;</div><div>Meeting ID: 841-925-869</div><div>&nbsp;</div><div>GoToMeeting® </div><div>Online Meetings Made Easy®</div><div>&nbsp;</div><div>Not at your computer? Click the link to join this meeting from your iPhone®, iPad® or Android® device via the GoToMeeting app.</div><div>&nbsp;</div></span></font></body></html>";
+			string expected = "1.&nbsp; Please join my meeting.\n";
+			expected += "https://global.gotomeeting.com/join/841925869\n";
+			expected += "&nbsp;";
+			expected += "2.  You will be connected to audio using your computer's microphone and speakers (VoIP).  A headset is recommended.\n";
+			expected += "&nbsp;";
+			expected += "Meeting ID: 841-925-869\n";
+			expected += "&nbsp;";
+			expected += "GoToMeeting® \n";
+			expected += "Online Meetings Made Easy®\n";
+			expected += "&nbsp;";
+			expected += "Not at your computer? Click the link to join this meeting from your iPhone®, iPad® or Android® device via the GoToMeeting app.\n";
+			expected += "&nbsp;";
+			
+			string actual = WrapHtmlToText(source);
+			System.Diagnostics.Debug.WriteLine(actual);
+			Assert.AreEqual(expected, actual);
+		}
+		private string WrapHtmlToText(string html)
+		{
+			string output = string.Empty;
+			//html = html.Replace("<div>&nbsp;</div>","\n");
+			Regex regex = new Regex("(?<=^|>)[^><]+?(?=<|$)");
+			foreach(Match match in regex.Matches(html))
+			{
+				output += match.Groups[0].Value;
+				output += "\n";
+			}
+			
+			output = output.Replace("&nbsp;", " ");
+			return output;
 		}
 	}
 }
