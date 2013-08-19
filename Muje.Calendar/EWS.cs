@@ -147,9 +147,24 @@ namespace Muje.Calendar
 			//Get the tasks.
 			FindItemsResults<Item> tasks = service.FindItems(WellKnownFolderName.Tasks, filter, new ItemView(200));
 			foreach(Task item in tasks.Items)
-				output.Add(item);
+			{
+				if(item.Status != TaskStatus.Deferred)
+					output.Add(item);
+			}
 			
-			return output;        	
+			return output;
+        }
+        /// <summary>
+        /// Insert a new task into Exchange.
+        /// </summary>
+        /// <param name="task"></param>
+        public void AddTask(Google.Apis.Tasks.v1.Data.Task task)
+        {
+        	//Microsoft.Exchange.WebServices.Data.Task
+        	Task newTask = new Task(service);
+        	newTask.Subject = task.Title;
+        	newTask.Body = new MessageBody(task.Notes);
+        	newTask.Save(WellKnownFolderName.Tasks);
         }
     }
 }

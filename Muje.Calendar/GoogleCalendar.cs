@@ -40,6 +40,7 @@ namespace Muje.Calendar
 		private CalendarService service;
 		private static OAuth2Authenticator<WebServerClient> _authenticator;
 		private IAuthorizationState _state;
+		private TasksService tasksService;
 		/// <summary>
 		/// Google Calendar private feed url.
 		/// </summary>
@@ -531,9 +532,8 @@ namespace Muje.Calendar
 			
 			// ignore those not sync from outlook
 			// return true for not remove from Google Calendar in this case
-			if(e.Description == null)
+			if(e.Description != null)
 			{
-				return true;
 				if(!e.Description.Contains(NOTES))
 					return true;
 			}
@@ -644,24 +644,62 @@ namespace Muje.Calendar
 			
 			return new OAuth2Authenticator<NativeApplicationClient>(provider, GetTaskAuthorization);
 		}
-		public void RetrieveTask()
+		public List<Google.Apis.Tasks.v1.Data.Task> RetrieveTask()
 		{
-			TasksService tasksService = new TasksService(
-				new BaseClientService.Initializer()
-	            {
-					Authenticator = CreateTaskAuthenticator()
-	            });
+			List<Google.Apis.Tasks.v1.Data.Task> output = new List<Google.Apis.Tasks.v1.Data.Task>();
+			if(tasksService == null)
+			{
+				tasksService = new TasksService(
+					new BaseClientService.Initializer()
+		            {
+						Authenticator = CreateTaskAuthenticator()
+		            });
+			}
 			
 			// TODO: tasksService.Tasks.Insert(task, "Office");
 			foreach(TaskList list in tasksService.Tasklists.List().Fetch().Items)
 			{
 				System.Diagnostics.Debug.WriteLine(list.Title);
-				Tasks tasks = tasksService.Tasks.List(list.Id).Fetch();
-				foreach(Google.Apis.Tasks.v1.Data.Task task in tasks.Items)
+				if(list.Title.ToLower() == "office")
 				{
-					System.Diagnostics.Debug.WriteLine("\t"+task.Title);
+					Tasks tasks = tasksService.Tasks.List(list.Id).Fetch();
+					foreach(Google.Apis.Tasks.v1.Data.Task task in tasks.Items)
+					{
+						System.Diagnostics.Debug.WriteLine("\t"+task.Title+": "+ task.Notes);
+						output.Add(task);
+					}
 				}
-				
+			}
+			
+			return output;
+		}
+		/// <summary>
+		/// TODO: Add new task into Google Task.
+		/// </summary>
+		/// <param name="subject"></param>
+		/// <param name="body"></param>
+		/// <seealso cref="http://code.google.com/p/google-api-dotnet-client/source/browse/Tasks.CreateTasks/Program.cs?repo=samples">google-api-dotnet-client</seealso>
+		public void AddTask(string subject, string body)
+		{
+			if(tasksService == null)
+			{
+				tasksService = new TasksService(
+					new BaseClientService.Initializer()
+		            {
+						Authenticator = CreateTaskAuthenticator()
+		            });
+			}
+			
+			foreach(TaskList list in tasksService.Tasklists.List().Fetch().Items)
+			{
+				System.Diagnostics.Debug.WriteLine(list.Title);
+				if(list.Title.ToLower() == "office")
+				{
+					Google.Apis.Tasks.v1.Data.Task task = new Google.Apis.Tasks.v1.Data.Task();
+					task.Title = subject;
+					task.Notes = body;
+					//tasksService.Tasks.Insert(task, list.Id).Execute();
+				}
 			}
 		}
 	}

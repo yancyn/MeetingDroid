@@ -196,7 +196,7 @@ namespace GoogleCalendarSync
 				Email=Settings.Default.ExchangeEmail,
 				Password=Settings.Default.ExchangePassword,
 				Domain=Settings.Default.Domain};
-			List<Task> tasks = ews.GetIncompletedTasks();
+			List<Task> original = ews.GetIncompletedTasks();
 			
 			// setup credentials
 			Muje.Calendar.ClientCredentials.ApiKey = Settings.Default.Api;
@@ -204,7 +204,24 @@ namespace GoogleCalendarSync
 			Muje.Calendar.ClientCredentials.ClientID = Settings.Default.ClientID;
 			Muje.Calendar.ClientCredentials.ClientSecret = Settings.Default.ClientSecret;			
 			GoogleCalendar calendar = new GoogleCalendar();
-			calendar.RetrieveTask();
+			List<Google.Apis.Tasks.v1.Data.Task> target = calendar.RetrieveTask();
+			
+			// merge both collection
+			
+			// merge outlook from Google Task
+			foreach(Google.Apis.Tasks.v1.Data.Task task in target)
+			{
+				bool isNew = true;
+				foreach(Task oTask in original)
+				{
+					if(oTask.Subject.Equals(task.Title))
+						isNew = false;
+				}
+				
+				if(isNew) ews.AddTask(task);
+			}
+			
+			// TODO: merge outlook to Google Task
 		}
 		/// <summary>
 		/// Return the height of taskbar when it is at bottom screen.
