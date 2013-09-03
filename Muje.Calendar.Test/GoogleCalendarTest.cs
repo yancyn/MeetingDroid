@@ -83,6 +83,20 @@ namespace Muje.Calendar.Test
 			Assert.AreEqual(expected, actual);
 		}
 		[Test]
+		public void ShortTimeFormatTest()
+		{
+			DateTime source = new DateTime(2013, 9, 5, 0, 30,0);
+			string expected = "12:30";
+			string actual = source.ToString("h:mm");
+			Assert.AreEqual(expected, actual);
+			
+			source = new DateTime(2013, 9, 5, 15, 30,0);
+			expected = "3:30";
+			actual = source.ToString("h:mm");
+			Assert.AreEqual(expected, actual);
+			
+		}
+		[Test]
 		public void ExtractIdTest()
 		{
 			List<string> ids;

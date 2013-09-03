@@ -62,6 +62,7 @@ namespace Muje.Calendar
 		const string ISO_LONG_DATE_FORMAT = "yyyy-MM-dd h:mmtt";
 		const string ISO_SHORT_DATE_FORMAT = "yyyy-MM-dd";
 		const string ISO_TIME_FORMAT = "h:mmtt";
+		const string ISO_SHORT_TIME_FORMAT = "h:mm";
 		/// <summary>
 		/// Mark as a label synced from Microsoft Outlook 2010.
 		/// </summary>
@@ -234,9 +235,7 @@ namespace Muje.Calendar
 				if(appointment.End.Subtract(appointment.Start) < new TimeSpan(24,0,0))
 				//if(from.Substring(0, 10).Equals(to.Substring(0, 10)))
 				{
-					to = appointment.End.ToString(ISO_TIME_FORMAT);
-					// QuickAdd bug: 12AM is confusing to google console.
-					if (to.Equals("12:00AM")) to = "00:00AM";
+					to = appointment.End.ToString(ISO_SHORT_TIME_FORMAT);
 				}
 				else
 				{
