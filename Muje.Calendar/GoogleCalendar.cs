@@ -463,6 +463,8 @@ namespace Muje.Calendar
 			string appointmentSubject = trimSubject(appointment.Subject.Trim());
 			foreach(Event e in events)
 			{
+                if (e.Summary == null) continue;
+
 				string subjectOnly = string.Empty;
 				int end = e.Summary.IndexOf("at");
 				if(end > -1) subjectOnly = e.Summary.Substring(0, end).Trim();
@@ -553,6 +555,8 @@ namespace Muje.Calendar
 			
 			foreach(Appointment appointment in appointments)
 			{
+                if (e.Summary == null) continue;
+
 				string appointmentSubject = trimSubject(appointment.Subject.Trim());
 				string subjectOnly = string.Empty;
 				int end = e.Summary.IndexOf("at");

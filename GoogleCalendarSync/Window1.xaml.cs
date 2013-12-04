@@ -155,6 +155,7 @@ namespace GoogleCalendarSync
 			// if not found with the latest result from EWS means been removed or updated.
 			foreach(Event e in existing)
 			{
+                if (e.Summary == null) continue;
 				if(!calendar.Contains(e, appointments))
 					calendar.Delete(e);
 			}
