@@ -114,61 +114,68 @@ namespace GoogleCalendarSync
 		/// <summary>
 		/// Sync calendar action.
 		/// </summary>
-		private void SyncCalendar()
-		{
-			/**
-			 * 1. Retrieve 30 days appointments from Outlook. Starting from DateTime.Now. Ignore pass appointment.
-			 * 2. Verify whether any updates or new in primary Google Calendar if so just update or insert.
-			 * 3. Run periodically, configure as 4h, 6h or manually.
-			 * 4. Done.
-			 */
-			List<Event> events = new List<Event>();
+        private void SyncCalendar()
+        {
+            /**
+             * 1. Retrieve 30 days appointments from Outlook. Starting from DateTime.Now. Ignore pass appointment.
+             * 2. Verify whether any updates or new in primary Google Calendar if so just update or insert.
+             * 3. Run periodically, configure as 4h, 6h or manually.
+             * 4. Done.
+             */
+            List<Event> events = new List<Event>();
 
-			EWS ews = new EWS{
-				Email=Settings.Default.ExchangeEmail,
-				Password=Settings.Default.ExchangePassword,
-				Domain=Settings.Default.Domain};
-			List<Appointment> appointments = ews.GetAppointments(
-				Settings.Default.ExchangeEmail,
-				DateTime.Now, DateTime.Now.AddDays(Settings.Default.PeriodDays));
-			
-			// setup credentials
-			Muje.Calendar.ClientCredentials.ApiKey = Settings.Default.Api;
-			Muje.Calendar.ClientCredentials.CalendarId = Settings.Default.CalendarId;
-			Muje.Calendar.ClientCredentials.ClientID = Settings.Default.ClientID;
-			Muje.Calendar.ClientCredentials.ClientSecret = Settings.Default.ClientSecret;
-			
-			GoogleCalendar calendar = new GoogleCalendar();
-			calendar.FeedUrl = Settings.Default.FeedUrl;
-			calendar.Login();
-			IList<Event> existing = calendar.Retrieve(DateTime.Now, DateTime.Now.AddDays(Settings.Default.PeriodDays));
-//			foreach(Event e in existing)
-//				System.Diagnostics.Debug.WriteLine(e.Summary + " at " +e.Start.Date + " " +e.Start.DateTime);
-			
-			foreach(Appointment appointment in appointments)
-			{
-				if(!calendar.Contains(appointment, existing))
-					events.Add(calendar.Insert(appointment));
-			}
-			
-			// Assuming retrieve those only sync to Google Calendar previously
-			// if not found with the latest result from EWS means been removed or updated.
-			foreach(Event e in existing)
-			{
+            EWS ews = new EWS
+            {
+                Email = Settings.Default.ExchangeEmail,
+                Password = Settings.Default.ExchangePassword,
+                Domain = Settings.Default.Domain
+            };
+            List<Appointment> appointments = ews.GetAppointments(
+                Settings.Default.ExchangeEmail,
+                DateTime.Now, DateTime.Now.AddDays(Settings.Default.PeriodDays));
+
+            // setup credentials
+            Muje.Calendar.ClientCredentials.ApiKey = Settings.Default.Api;
+            Muje.Calendar.ClientCredentials.CalendarId = Settings.Default.CalendarId;
+            Muje.Calendar.ClientCredentials.ClientID = Settings.Default.ClientID;
+            Muje.Calendar.ClientCredentials.ClientSecret = Settings.Default.ClientSecret;
+
+            GoogleCalendar calendar = new GoogleCalendar();
+            calendar.FeedUrl = Settings.Default.FeedUrl;
+            calendar.Login();
+            IList<Event> existing = calendar.Retrieve(DateTime.Now, DateTime.Now.AddDays(Settings.Default.PeriodDays));
+            //			foreach(Event e in existing)
+            //				System.Diagnostics.Debug.WriteLine(e.Summary + " at " +e.Start.Date + " " +e.Start.DateTime);
+
+            foreach (Appointment appointment in appointments)
+            {
+                if (!calendar.Contains(appointment, existing))
+                    events.Add(calendar.Insert(appointment));
+            }
+
+            // Assuming retrieve those only sync to Google Calendar previously
+            // if not found with the latest result from EWS means been removed or updated.
+            foreach (Event e in existing)
+            {
+                // ignore those not sync from outlook
+                // return true for not remove from Google Calendar in this case
+                if (e.Description == null) continue;
+                if (!e.Description.Contains(GoogleCalendar.NOTES)) continue;
                 if (e.Summary == null) continue;
-				if(!calendar.Contains(e, appointments))
-					calendar.Delete(e);
-			}
 
-			// If no new appointment simply add a false appointment to notify as well.
-			if(events.Count == 0)
-			{
-				Event i = new Event();
-				i.Summary = "No new appointment found until "+DateTime.Now.AddDays(Settings.Default.PeriodDays).ToShortDateString()+".";
-				events.Add(i);
-			}
-			EventLists.ItemsSource = events;
-		}
+                if (!calendar.Contains(e, appointments))
+                    calendar.Delete(e);
+            }
+
+            // If no new appointment simply add a false appointment to notify as well.
+            if (events.Count == 0)
+            {
+                Event i = new Event();
+                i.Summary = "No new appointment found until " + DateTime.Now.AddDays(Settings.Default.PeriodDays).ToShortDateString() + ".";
+                events.Add(i);
+            }
+            EventLists.ItemsSource = events;
+        }
 		private void Notify()
 		{
 			this.Show();

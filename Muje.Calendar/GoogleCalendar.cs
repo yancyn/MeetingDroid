@@ -59,14 +59,14 @@ namespace Muje.Calendar
 				return _state ?? HttpContext.Current.Session["AUTH_STATE"] as IAuthorizationState;
 			}
 		}
-		const string ISO_LONG_DATE_FORMAT = "yyyy-MM-dd h:mmtt";
-		const string ISO_SHORT_DATE_FORMAT = "yyyy-MM-dd";
-		const string ISO_TIME_FORMAT = "h:mmtt";
-		const string ISO_SHORT_TIME_FORMAT = "h:mm";
+		public const string ISO_LONG_DATE_FORMAT = "yyyy-MM-dd h:mmtt";
+		public const string ISO_SHORT_DATE_FORMAT = "yyyy-MM-dd";
+		public const string ISO_TIME_FORMAT = "h:mmtt";
+		public const string ISO_SHORT_TIME_FORMAT = "h:mm";
 		/// <summary>
 		/// Mark as a label synced from Microsoft Outlook 2010.
 		/// </summary>
-		const string NOTES = "[Synced from EWS]";
+		public const string NOTES = "[Synced from EWS]";
 		
 		public GoogleCalendar()
 		{
@@ -464,7 +464,6 @@ namespace Muje.Calendar
 			foreach(Event e in events)
 			{
                 if (e.Summary == null) continue;
-
 				string subjectOnly = string.Empty;
 				int end = e.Summary.IndexOf("at");
 				if(end > -1) subjectOnly = e.Summary.Substring(0, end).Trim();
@@ -527,68 +526,59 @@ namespace Muje.Calendar
 		/// <param name="e"></param>
 		/// <param name="appointments"></param>
 		/// <returns></returns>
-		public bool Contains(Event e, List<Appointment> appointments)
-		{
-			bool found = false;
-			
-			// ignore those not sync from outlook
-			// return true for not remove from Google Calendar in this case
-			if(e.Description != null)
-			{
-				if(!e.Description.Contains(NOTES))
-					return true;
-			}
-			
-			// TODO: Check. ignore earlier event entry since always not found in the provided appointment result here
-			if(e.Start != null)
-			{
-				DateTime start = DateTime.Now;
-				DateTime todayBegin = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
-				if(e.Start.DateTime != null)
-					start = DateTime.Parse(e.Start.DateTime);
-				else if(e.Start.Date != null)
-					start = DateTime.Parse(e.Start.Date);
-				if(start.CompareTo(todayBegin) < 0)
-						return true;
-			}
-			
-			
-			foreach(Appointment appointment in appointments)
-			{
-                if (e.Summary == null) continue;
+        public bool Contains(Event e, List<Appointment> appointments)
+        {
+            bool found = false;
 
-				string appointmentSubject = trimSubject(appointment.Subject.Trim());
-				string subjectOnly = string.Empty;
-				int end = e.Summary.IndexOf("at");
-				if(end > -1) subjectOnly = e.Summary.Substring(0, end).Trim();
-				if(e.Summary == appointmentSubject || subjectOnly == appointmentSubject)
-				{
-					if(e.Start != null)
-					{
-						if(e.Start.DateTime != null && e.Start.DateTime.Length >= 10)
-						{
-							DateTime start = DateTime.Parse(e.Start.DateTime);
-							if(start.Equals(appointment.Start))
-							{
-								Print(e, appointment);
-								return true;
-							}
-						} else if(e.Start.Date != null)
-						{
-							DateTime start = DateTime.Parse(e.Start.Date);
-							if(start.Equals(appointment.Start))
-							{
-								Print(e, appointment);
-								return true;
-							}
-						}
-					}
-				}
-			}
-			
-			Print(e);
-			return found;
-		}
+            // TODO: Check. ignore earlier event entry since always not found in the provided appointment result here
+            if (e.Start != null)
+            {
+                DateTime start = DateTime.Now;
+                DateTime todayBegin = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+                if (e.Start.DateTime != null)
+                    start = DateTime.Parse(e.Start.DateTime);
+                else if (e.Start.Date != null)
+                    start = DateTime.Parse(e.Start.Date);
+                if (start.CompareTo(todayBegin) < 0)
+                    return true;
+            }
+
+
+            foreach (Appointment appointment in appointments)
+            {
+                string appointmentSubject = trimSubject(appointment.Subject.Trim());
+                string subjectOnly = string.Empty;
+                int end = e.Summary.IndexOf("at");
+                if (end > -1) subjectOnly = e.Summary.Substring(0, end).Trim();
+                if (e.Summary == appointmentSubject || subjectOnly == appointmentSubject)
+                {
+                    if (e.Start != null)
+                    {
+                        if (e.Start.DateTime != null && e.Start.DateTime.Length >= 10)
+                        {
+                            DateTime start = DateTime.Parse(e.Start.DateTime);
+                            if (start.Equals(appointment.Start))
+                            {
+                                Print(e, appointment);
+                                return true;
+                            }
+                        }
+                        else if (e.Start.Date != null)
+                        {
+                            DateTime start = DateTime.Parse(e.Start.Date);
+                            if (start.Equals(appointment.Start))
+                            {
+                                Print(e, appointment);
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            Print(e);
+            return found;
+        }
 		/// <summary>
 		/// Wrap html source to pure text as Google Calendar description.
 		/// </summary>
